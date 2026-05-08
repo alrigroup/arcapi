@@ -1,0 +1,22 @@
+# C Executables
+core
+alri_server
+*.exe
+*.out
+*.o
+
+# Security Keys and Certificates
+*.pem
+cert.pem
+key.pem
+*.crt
+*.key
+
+# System Files
+.DS_Store
+Thumbs.db
+
+# Frontend Build Directories (In case Vite/React is used inside the web folder)
+node_modules/
+dist/
+.env
