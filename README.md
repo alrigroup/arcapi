@@ -1,8 +1,8 @@
 <div align="center">
   <img src="https://i.ibb.co/Fk4sSC7X/ALRI-SF-W.png" width="150" alt="ALRI Group Logo">
 
-  # ALRI-CORE
-  **Developed by ALRI Group**
+  # ARCAPI
+  **Developed by ALRI Development**
   
   *A micro-framework and Web server written from scratch in C.*
 </div>
@@ -15,9 +15,13 @@
 > **OS Compatibility:** The project is currently **100% focused on Linux/Unix environments** and relies on system-specific functions like `fork/exec`. **There is no native support for Windows.** To run it on a Windows machine, you must use WSL (Windows Subsystem for Linux).
 
 ### 📌 About the Project
-**ALRI-CORE** is a micro-framework and Web server written from scratch in **C**. Its main goal is to deliver an ultra-lightweight modular environment, controlling everything from Socket connections to the final HTTP/HTTPS response.
+**ARCAPI** is a micro-framework and Web server written from scratch in **C**. Its main goal is to deliver an ultra-lightweight modular environment, controlling everything from Socket connections to the final HTTP/HTTPS response.
 
 The system abstracts the entire backend part, leaving a ready-to-use flow for you to host and serve static applications, SPAs (created in React, Vite, Angular, etc), and even build a REST API using C.
+
+### 🛡️ Protection & License
+This project, including all its source code, scripts, and digital assets, is strictly protected by the **[ARGLP - ALRI GROUP LICENSE PERMISSIVE](https://raw.githubusercontent.com/alrigroup/licenses/refs/heads/main/LICENSE-ARGLP)**.
+* You can use, modify, and distribute this project as long as you credit **ALRI Group** and follow the terms of the license.
 
 ---
 
@@ -26,7 +30,7 @@ The system abstracts the entire backend part, leaving a ready-to-use flow for yo
 * **Automatic Redirect:** Isolated thread that listens on port 80 and automatically forwards all HTTP traffic to HTTPS.
 * **Simple Router (`api.c`):** Allows easy registration of GET/POST routes. With the generic `sendpage("folder")` function, it serves your application's HTML and all `.css` and `.js` files automatically.
 * **Anti-Path Traversal Security:** Upon startup, the server scans the local files in the `/web` folder and maps what exists in memory, denying any malicious access attempting to fetch system files (`../../`).
-* **Self-Managed:** The base program (`core.c`) handles compiling, isolating, and running your main server (`alri_server`) using `fork/exec`.
+* **Self-Managed:** The base program (`core.c`) handles compiling, isolating, and running your main server (`arc_server`) using `fork/exec`.
 
 ---
 
@@ -82,9 +86,9 @@ The `sendpage` function will do all the hard work of fetching `index.html` and r
 ---
 
 ### 👤 Credits
-* **Developer Company:** [ALRI Group](https://github.com/alrigroup/)
+* **Developer Company:** [ALRI Development](https://github.com/alrigroup/)
 * **Lead Developer:** [AlexAR](https://github.com/alexsanderalri)
-* **Language:** C
+
 
 ---
 

@@ -1,58 +1,58 @@
 #ifndef SERVER_H
 #define SERVER_H
 
-// Modos de operação do servidor
+// Server operation modes
 #define MODE_INSECURE 0
 #define MODE_SECURE   1
 
-// Constantes de formatação
+// Formatting constants
 #define PURPLE "\033[1;35m"
 #define RESET  "\033[0m"
 #define RED    "\033[1;31m"
 #define GREEN  "\033[1;32m"
 #define CYAN   "\033[1;36m"
 
-// Estrutura abstrata de uma requisição HTTP
+// Abstract structure of an HTTP request
 typedef struct {
     char *method;       // GET, POST, etc.
     char *path;         // /home, /api/data
     char *query_params; // id=1&user=2
-    char *cookies;      // Strings de cookies (simplificado)
-    char *body;         // Corpo da requisição (se houver)
+    char *cookies;      // Cookie strings (simplified)
+    char *body;         // Request body (if any)
 } HttpRequest;
 
-// Ponteiro opaco que esconde detalhes do cliente (ex: socket fd e SSL*)
+// Opaque pointer hiding client details (e.g. socket fd and SSL*)
 typedef struct ClientConnection ClientConnection;
 
-// Assinatura do handler de requisições que será fornecido pela API
+// Request handler signature provided by the API
 typedef void (*RequestHandler)(ClientConnection *conn, HttpRequest *req);
 
 /**
- * Inicializa o servidor e começa a escutar por conexões.
+ * Initializes the server and starts listening for connections.
  * 
- * @param port Porta para rodar o servidor principal (ex: 443 ou 8080)
- * @param mode MODE_SECURE ou MODE_INSECURE
- * @param handler Função de callback da camada de API
+ * @param port Port to run the main server (e.g. 443 or 8080)
+ * @param mode MODE_SECURE or MODE_INSECURE
+ * @param handler API layer callback function
  */
 void server_start(int port, int mode, RequestHandler handler);
 
 /**
- * Envia uma resposta HTTP básica ao cliente.
+ * Sends a basic HTTP response to the client.
  * 
- * @param conn Conexão atual do cliente
- * @param status Código HTTP (200, 404, etc)
- * @param content_type Mime type (ex: text/html)
- * @param body Corpo da resposta
+ * @param conn Current client connection
+ * @param status HTTP code (200, 404, etc)
+ * @param content_type Mime type (e.g. text/html)
+ * @param body Response body
  */
 void server_send_response(ClientConnection *conn, int status, const char *content_type, const char *body);
 
 /**
- * Lê e serve um arquivo local (com proteção contra Path Traversal embutida).
+ * Reads and serves a local file (with built-in Path Traversal protection).
  *
- * @param conn Conexão atual do cliente
- * @param filepath Caminho completo para o arquivo a ser servido
- * @param content_type Mime type do arquivo
- * @return 1 se sucesso, 0 se falhou (ex: arquivo não encontrado ou acesso negado)
+ * @param conn Current client connection
+ * @param filepath Full path to the file to be served
+ * @param content_type File mime type
+ * @return 1 on success, 0 on failure (e.g. file not found or access denied)
  */
 int server_serve_file(ClientConnection *conn, const char *filepath, const char *content_type);
 

@@ -21,11 +21,11 @@
 struct ClientConnection {
     int socket_fd;
     SSL *ssl;
-    int mode; // MODE_SECURE ou MODE_INSECURE
+    int mode; // MODE_SECURE or MODE_INSECURE
 };
 
 // ------------------------------------------------------------------
-// Globals para o Server
+// Globals for the Server
 // ------------------------------------------------------------------
 static RequestHandler global_api_handler = NULL;
 
@@ -46,7 +46,7 @@ static void add_allowed_path(const char *path) {
     new_path->path[sizeof(new_path->path) - 1] = '\0';
     new_path->next = allowed_paths;
     allowed_paths = new_path;
-    printf(PURPLE"[ALRI-SERVER-MAP]"RESET" Indexado: [%s]\n", path);
+    printf(PURPLE"[ARC-SERVER-MAP]"RESET" Indexed: [%s]\n", path);
 }
 
 static int is_path_allowed(const char *path) {
@@ -70,7 +70,7 @@ static int is_path_allowed(const char *path) {
 static void scan_web_directory(const char *dir_name) {
     DIR *d = opendir(dir_name);
     if (!d) {
-        printf(RED"[ALRI-SERVER-ERR]"RESET" Nao foi possivel abrir diretorio: %s\n", dir_name);
+        printf(RED"[ARC-SERVER-ERR]"RESET" Could not open directory: %s\n", dir_name);
         return;
     }
     
@@ -144,7 +144,7 @@ void server_send_response(ClientConnection *conn, int status, const char *conten
 
 int server_serve_file(ClientConnection *conn, const char *filepath, const char *content_type) {
     if (!is_path_allowed(filepath)) {
-        printf(RED"[ALRI-SERVER]"RESET" Acesso negado (Path Traversal): %s\n", filepath);
+        printf(RED"[ARC-SERVER]"RESET" Access denied (Path Traversal): %s\n", filepath);
         return 0; 
     }
 
@@ -166,9 +166,9 @@ int server_serve_file(ClientConnection *conn, const char *filepath, const char *
     conn_write(conn, headers, strlen(headers));
     
     char chunk[8192];
-    size_t bytes_lidos;
-    while ((bytes_lidos = fread(chunk, 1, sizeof(chunk), f)) > 0) {
-        conn_write(conn, chunk, bytes_lidos);
+    size_t bytes_read;
+    while ((bytes_read = fread(chunk, 1, sizeof(chunk), f)) > 0) {
+        conn_write(conn, chunk, bytes_read);
     }
     
     fclose(f);
@@ -186,7 +186,7 @@ static void *redirector_thread(void *arg) {
     char buffer[1024];
 
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
-        perror("Falha no socket de redirecionamento");
+        perror("Failed redirector socket");
         return NULL;
     }
 
@@ -196,18 +196,18 @@ static void *redirector_thread(void *arg) {
     address.sin_port = htons(80);
 
     if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0) {
-        perror("Erro ao abrir porta 80");
+        perror("Error opening port 80");
         close(server_fd);
         return NULL;
     }
 
     if (listen(server_fd, 100) < 0) {
-        perror("Erro no Listen da porta 80");
+        perror("Error on port 80 Listen");
         close(server_fd);
         return NULL;
     }
 
-    printf(CYAN"[ALRI-REDIRECTOR]"RESET" Rodando na porta 80, redirecionando para HTTPS...\n");
+    printf(CYAN"[ARC-REDIRECTOR]"RESET" Running on port 80, redirecting to HTTPS...\n");
 
     while (1) {
         if ((client_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen)) < 0) {
@@ -256,11 +256,11 @@ static void handle_client(ClientConnection *conn) {
     }
     req.path = full_path;
     
-    // Passa o controle para a camada de API processar a rota
+    // Pass control to the API layer to process the route
     if (global_api_handler) {
         global_api_handler(conn, &req);
     } else {
-        server_send_response(conn, 500, "text/plain", "API não inicializada corretamente");
+        server_send_response(conn, 500, "text/plain", "API not properly initialized");
     }
 }
 
@@ -304,7 +304,7 @@ void server_start(int port, int mode, RequestHandler handler) {
     signal(SIGPIPE, SIG_IGN);
     global_api_handler = handler;
 
-    printf(PURPLE"[ALRI-SERVER-MAP]"RESET" Escaneando diretório web...\n");
+    printf(PURPLE"[ARC-SERVER-MAP]"RESET" Scanning web directory...\n");
     scan_web_directory(WEB_BASE_PATH);
 
     SSL_CTX *ctx = NULL;
@@ -331,7 +331,7 @@ void server_start(int port, int mode, RequestHandler handler) {
             exit(EXIT_FAILURE);
         }
         
-        // Sobe o redirecionador HTTP -> HTTPS na porta 80 paralelamente
+        // Start HTTP -> HTTPS redirector on port 80 in parallel
         pthread_t redir_tid;
         pthread_create(&redir_tid, NULL, redirector_thread, NULL);
         pthread_detach(redir_tid);
@@ -347,19 +347,19 @@ void server_start(int port, int mode, RequestHandler handler) {
     addr.sin_addr.s_addr = INADDR_ANY;
 
     if (bind(server_sock, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
-        perror("Erro no bind do server principal");
+        perror("Error on main server bind");
         exit(EXIT_FAILURE);
     }
 
     if (listen(server_sock, 100) < 0) {
-        perror("Erro no listen do server principal");
+        perror("Error on main server listen");
         exit(EXIT_FAILURE);
     }
 
     if (mode == MODE_SECURE) {
-        printf(GREEN"[ALRI-SERVER]" RESET " Servidor HTTPS iniciado na porta %d!\n", port);
+        printf(GREEN"[ARC-SERVER]" RESET " HTTPS Server started on port %d!\n", port);
     } else {
-        printf(GREEN"[ALRI-SERVER]" RESET " Servidor HTTP iniciado na porta %d!\n", port);
+        printf(GREEN"[ARC-SERVER]" RESET " HTTP Server started on port %d!\n", port);
     }
 
     while (1) {

@@ -3,14 +3,14 @@
 
 #include "server.h"
 
-// Define como o servidor vai rodar: MODE_SECURE (HTTPS na 443 + Redirect na 80) ou MODE_INSECURE (HTTP)
+// Defines how the server will run: MODE_SECURE (HTTPS on 443 + Redirect on 80) or MODE_INSECURE (HTTP)
 #define OPERATION_MODE MODE_SECURE
 #define SERVER_PORT (OPERATION_MODE == MODE_SECURE ? 443 : 8080)
 
-// Assinatura de um manipulador de rotas específico da aplicação
+// Application-specific route handler signature
 typedef void (*RouteHandler)(ClientConnection *conn, HttpRequest *req);
 
-// Estrutura de uma rota
+// Route structure
 typedef struct Route {
     char path[256];
     char method[16];
@@ -19,17 +19,17 @@ typedef struct Route {
 } Route;
 
 /**
- * Adiciona uma nova rota na aplicação.
+ * Adds a new route to the application.
  */
 void add_route(const char *path, const char *method, RouteHandler handler);
 
 /**
- * Utilitário da aplicação para enviar uma página baseada no nome da pasta.
+ * Application utility to send a page based on the folder name.
  */
 void send_page(ClientConnection *conn, const char *folder_name, const char *request_path);
 
 /**
- * Inicializa a API, cadastra rotas e inicia o servidor.
+ * Initializes the API, registers routes, and starts the server.
  */
 void api_init();
 

@@ -7,7 +7,7 @@
 static Route *route_list = NULL;
 
 // ------------------------------------------------------------------
-// Sistema de Cadastro de Rotas
+// Route Registration System
 // ------------------------------------------------------------------
 void add_route(const char *path, const char *method, RouteHandler handler) {
     Route *new_route = (Route *)malloc(sizeof(Route));
@@ -19,7 +19,7 @@ void add_route(const char *path, const char *method, RouteHandler handler) {
 }
 
 // ------------------------------------------------------------------
-// Tratamento de Páginas (Substitui o antigo send_page)
+// Page Handling (Replaces old send_page)
 // ------------------------------------------------------------------
 void send_page(ClientConnection *conn, const char *folder_name, const char *request_path) {
     char full_path[512];
@@ -41,7 +41,7 @@ void send_page(ClientConnection *conn, const char *folder_name, const char *requ
 }
 
 // ------------------------------------------------------------------
-// Arquivos Estáticos e 404
+// Static Files and 404
 // ------------------------------------------------------------------
 static int serve_static_file(ClientConnection *conn, const char *path) {
     const char *ext = strrchr(path, '.');
@@ -67,20 +67,20 @@ static int serve_static_file(ClientConnection *conn, const char *path) {
 }
 
 static void route_404(ClientConnection *conn, HttpRequest *req) {
-    server_send_response(conn, 404, "text/html", "<h1>404 - Pagina Nao Encontrada</h1>");
-    printf(RED"[API]" RESET " Rota não encontrada: %s\n", req->path);
+    server_send_response(conn, 404, "text/html", "<h1>404 - Page Not Found</h1>");
+    printf(RED"[API]" RESET " Route not found: %s\n", req->path);
 }
 
 // ------------------------------------------------------------------
-// Dispatcher Principal da API
+// Main API Dispatcher
 // ------------------------------------------------------------------
 static void api_request_handler(ClientConnection *conn, HttpRequest *req) {
-    // 1. Tenta servir arquivo estático primeiro
+    // 1. Try to serve static file first
     if (serve_static_file(conn, req->path)) {
         return; 
     }
     
-    // 2. Busca na lista de rotas
+    // 2. Search in route list
     Route *current = route_list;
     int found = 0;
     while (current != NULL) {
@@ -92,25 +92,25 @@ static void api_request_handler(ClientConnection *conn, HttpRequest *req) {
         current = current->next;
     }
     
-    // 3. Fallback para 404 se não achar nada
+    // 3. Fallback to 404 if not found
     if (!found) {
         route_404(conn, req);
     }
 }
 
 // ------------------------------------------------------------------
-// Exemplo de Handlers da Aplicação
+// Example Application Handlers
 // ------------------------------------------------------------------
 static void sendpage(ClientConnection *conn, const char *folder_name) {
     char full_path[512];
     
-    // Tenta index.html direto na pasta
+    // Try index.html directly in folder
     snprintf(full_path, sizeof(full_path), "web/%s/index.html", folder_name);
     if (access(full_path, F_OK) != 0) {
-        // Se não existir, tenta main.html
+        // If not found, try main.html
         snprintf(full_path, sizeof(full_path), "web/%s/main.html", folder_name);
         if (access(full_path, F_OK) != 0) {
-            // Fallback para projetos SPA como o Vite que usam a pasta dist/
+            // Fallback for SPA projects like Vite that use dist/ folder
             snprintf(full_path, sizeof(full_path), "web/%s/dist/index.html", folder_name);
         }
     }
@@ -123,26 +123,26 @@ static void home_handler(ClientConnection *conn, HttpRequest *req) {
 }
 
 static void api_data_handler(ClientConnection *conn, HttpRequest *req) {
-    const char *json = "{\"status\": \"sucesso\", \"mensagem\": \"Nova API em C funcionando!\"}";
+    const char *json = "{\"status\": \"success\", \"message\": \"New C API running!\"}";
     server_send_response(conn, 200, "application/json", json);
 }
 
 // ------------------------------------------------------------------
-// Inicialização
+// Initialization
 // ------------------------------------------------------------------
 void api_init() {
-    printf(CYAN"[API]" RESET " Inicializando rotas...\n");
+    printf(CYAN"[API]" RESET " Initializing routes...\n");
 
     add_route("/", "GET", home_handler);
     add_route("/home", "GET", home_handler);
     add_route("/api/data", "GET", api_data_handler);
 
-    printf(CYAN"[API]" RESET " Iniciando Servidor Core...\n");
+    printf(CYAN"[API]" RESET " Starting Core Server...\n");
     server_start(SERVER_PORT, OPERATION_MODE, api_request_handler);
 }
 
 // ------------------------------------------------------------------
-// Ponto de Entrada Padrão (main)
+// Standard Entry Point (main)
 // ------------------------------------------------------------------
 int main() {
     api_init();

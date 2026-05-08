@@ -1,6 +1,6 @@
 # C Executables
 core
-alri_server
+arc_server
 *.exe
 *.out
 *.o

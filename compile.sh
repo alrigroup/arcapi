@@ -6,7 +6,7 @@ chmod +x "$0" 2>/dev/null
 # Enter the source folder. If the folder does not exist, the script stops here (-e)
 cd source || { echo "Error: 'source' folder not found!"; exit 1; }
 
-echo "Compiling ALRI-CORE..."
+echo "Compiling ARCAPI..."
 
 gcc core.c -o core -pthread
 
@@ -17,6 +17,6 @@ mv core ../core
 chmod +x core 
 
 echo "--------------------------------"
-echo "ALRI-CORE Compilation Completed!"
+echo "ARCAPI Compilation Completed!"
 echo "Run: sudo ./core"
 echo "--------------------------------"

@@ -5,7 +5,7 @@
 #include <signal.h>
 #include <limits.h>
 
-// Definições de Cores
+// Color Definitions
 #define RED    "\033[1;31m"
 #define WHITE  "\033[1;37m"
 #define GREEN  "\033[1;32m"
@@ -16,7 +16,7 @@
 #define RESET  "\033[0m"
 
 char APP_PATH[PATH_MAX];
-const char* arb64 = "ICAvJCQkJCQkICAvJCQgICAgICAgLyQkJCQkJCQgIC8kJCQkJCQgICAgICAgIC8kJCQkJCQgICAvJCQkJCQkICAvJCQkJCQkJCAgLyQkJCQkJCQkCiAvJCRfXyAgJCR8ICQkICAgICAgfCAkJF9fICAkJHxfICAkJF8vICAgICAgIC8kJF9fICAkJCAvJCRfXyAgJCR8ICQkX18gICQkfCAkJF9fX19fLwp8ICQkICBcICQkfCAkJCAgICAgIHwgJCQgIFwgJCQgIHwgJCQgICAgICAgIHwgJCQgIFxfXy98ICQkICBcICQkfCAkJCAgXCAkJHwgJCQgICAgICAKfCAkJCQkJCQkJHwgJCQgICAgICB8ICQkJCQkJCQvICB8ICQkICAgICAgICB8ICQkICAgICAgfCAkJCAgfCAkJHwgJCQkJCQkJC98ICQkJCQkICAgCnwgJCRfXyAgJCR8ICQkICAgICAgfCAkJF9fICAkJCAgfCAkJCAgICAgICAgfCAkJCAgICAgIHwgJCQgIHwgJCR8ICQkX18gICQkfCAkJF9fLyAgIAp8ICQkICB8ICQkfCAkJCAgICAgIHwgJCQgIFwgJCQgIHwgJCQgICAgICAgIHwgJCQgICAgJCR8ICQkICB8ICQkfCAkJCAgXCAkJHwgJCQgICAgICAKfCAkJCAgfCAkJHwgJCQkJCQkJCR8ICQkICB8ICQkIC8kJCQkJCQgICAgICB8ICAkJCQkJCQvfCAgJCQkJCQkL3wgJCQgIHwgJCR8ICQkJCQkJCQkCnxfXy8gIHxfXy98X19fX19fX18vfF9fLyAgfF9fL3xfX19fX18vICAgICAgIFxfX19fX18vICBcX19fX19fLyB8X18vICB8X18vfF9fX19fX19fLwo=";
+const char* arb64 = "ICQkJCQkJFwgICQkJCQkJCRcICAgJCQkJCQkXCAgICQkJCQkJFwgICQkJCQkJCRcICQkJCQkJFwgCiQkICBfXyQkXCAkJCAgX18kJFwgJCQgIF9fJCRcICQkICBfXyQkXCAkJCAgX18kJFxcXyQkICBffAokJCAvICAkJCB8JCQgfCAgJCQgfCQkIC8gIFxfX3wkJCAvICAkJCB8JCQgfCAgJCQgfCAkJCB8ICAKJCQkJCQkJCQgfCQkJCQkJCQgIHwkJCB8ICAgICAgJCQkJCQkJCQgfCQkJCQkJCQgIHwgJCQgfCAgCiQkICBfXyQkIHwkJCAgX18kJDwgJCQgfCAgICAgICQkICBfXyQkIHwkJCAgX19fXy8gICQkIHwgIAokJCB8ICAkJCB8JCQgfCAgJCQgfCQkIHwgICQkXCAkJCB8ICAkJCB8JCQgfCAgICAgICAkJCB8ICAKJCQgfCAgJCQgfCQkIHwgICQkIHxcJCQkJCQkICB8JCQgfCAgJCQgfCQkIHwgICAgICQkJCQkJFwgClxfX3wgIFxfX3xcX198ICBcX198IFxfX19fX18vIFxfX3wgIFxfX3xcX198ICAgICBcX19fX19ffAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIA==";
 
 void building_logo_animation() {
     FILE *fp;
@@ -29,7 +29,7 @@ void building_logo_animation() {
     while (fgets(line, sizeof(line), fp) != NULL) {
         printf("%s", line);
         fflush(stdout);
-        usleep(30000); // Velocidade da logo
+        usleep(30000); // Logo animation speed
     }
     pclose(fp);
     printf(RESET "\n");
@@ -47,36 +47,36 @@ void loading_animation(const char *msg) {
 }
 
 void compile_and_update() {
-    printf(YELLOW "\n[ALRI-BUILDER] Iniciando rotina de compilação...\n" RESET);
+    printf(YELLOW "\n[ARC-BUILDER] Starting compilation routine...\n" RESET);
     
-    // 1. Entrar na pasta source
+    // 1. Enter the source folder
     if (chdir("source") != 0) {
-        fprintf(stderr, RED "[ERROR] Pasta 'source' não encontrada para compilação!\n" RESET);
+        fprintf(stderr, RED "[ERROR] 'source' folder not found for compilation!\n" RESET);
         return;
     }
 
-    loading_animation("Compilando alri_server   ");
-    system("gcc server.c api.c -o alri_server -lssl -lcrypto -pthread -w");
+    loading_animation("Compiling arc_server     ");
+    system("gcc server.c api.c -o arc_server -lssl -lcrypto -pthread -w");
 
-    loading_animation("Atualizando ALRI-CORE    ");
+    loading_animation("Updating ARCAPI          ");
     system("gcc core.c -o core -pthread -w");
 
-    printf(YELLOW "[ALRI-BUILDER] Movendo binários e aplicando permissões...\n" RESET);
-    system("mv core ../core && mv alri_server ../alri_server");
+    printf(YELLOW "[ARC-BUILDER] Moving binaries and applying permissions...\n" RESET);
+    system("mv core ../core && mv arc_server ../arc_server");
     
-    // Voltar para a raiz e dar permissão
+    // Return to root and grant permissions
     chdir("..");
-    system("chmod +x core alri_server");
+    system("chmod +x core arc_server");
 
-    printf(GREEN "[SUCCESS] Todos os módulos foram atualizados com sucesso!\n\n" RESET);
+    printf(GREEN "[SUCCESS] All modules updated successfully!\n\n" RESET);
 }
 
 void cleanup(int sig) {
-    printf("\n" GREEN "[ALRI-CORE]" RESET WHITE " Cleaning up all ALRI services..." RESET "\n");
-    system("sudo pkill -f alri_server");
+    printf("\n" GREEN "[ARCAPI]" RESET WHITE " Cleaning up all ARCAPI services..." RESET "\n");
+    system("sudo pkill -f arc_server");
     system("pkill -f script.py");
     system("pkill -f script.js");
-    printf(GREEN "[ALRI-CORE]" RESET WHITE " Services terminated. Goodbye!" RESET "\n");
+    printf(GREEN "[ARCAPI]" RESET WHITE " Services terminated. Goodbye!" RESET "\n");
     exit(0);
 }
 
@@ -88,31 +88,31 @@ void program() {
         printf(GRAY "[PATH] %s" RESET "\n", APP_PATH);
     }
 
-    // Executa a compilação antes de iniciar os serviços
+    // Execute compilation before starting services
     compile_and_update();
 
-    printf(GREEN "[ALRI-CORE]" RESET WHITE " Status: " RESET GREEN "ONLINE" RESET "\n");
+    printf(GREEN "[ARCAPI]" RESET WHITE " Status: " RESET GREEN "ONLINE" RESET "\n");
     printf(WHITE "--------------------------------------------------" RESET "\n");
     
     char cmd[PATH_MAX + 50];
 
-    // Iniciar o novo servidor API (HTTPS ou HTTP conforme OPERATION_MODE)
-    printf(GREEN "[ALRI-CORE]" GREEN "[+]" RESET WHITE " Starting new API server..." RESET "\n");
+    // Start the new API server (HTTPS or HTTP based on OPERATION_MODE)
+    printf(GREEN "[ARCAPI]" GREEN "[+]" RESET WHITE " Starting new API server..." RESET "\n");
     
     pid_t server_pid = fork();
     if (server_pid == -1) {
         perror("Failed to fork");
         exit(EXIT_FAILURE);
     } else if (server_pid == 0) {
-        // Processo filho (alri_server)
-        char *args[] = { "./alri_server", NULL };
+        // Child process (arc_server)
+        char *args[] = { "./arc_server", NULL };
         if (execv(args[0], args) == -1) {
-            perror("Failed to launch alri_server");
+            perror("Failed to launch arc_server");
             exit(EXIT_FAILURE);
         }
     } else {
-        // Processo pai (core)
-        // Permanece em execução para capturar sinais (como SIGINT via CTRL+C) e invocar cleanup
+        // Parent process (core)
+        // Stays running to catch signals (like SIGINT via CTRL+C) and trigger cleanup
         while (1) {
             pause();
         }
@@ -120,7 +120,7 @@ void program() {
 }
 
 int main() {
-    // Valida o sudo no início
+    // Validate sudo at the start
     if (system("sudo -v") != 0) {
         fprintf(stderr, RED "[ERROR]" RESET WHITE " This program needs to be executed as superuser (sudo)." RESET "\n");
         exit(1);
