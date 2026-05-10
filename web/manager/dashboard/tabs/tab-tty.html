@@ -1,0 +1,17 @@
+<div class="panel">
+    <div class="panel-header" data-i18n="p_tty_h">SERVER: TTY CONTROL</div>
+    <div class="panel-content upload-section">
+        <input type="text" id="tty-text" placeholder="Message for terminal..." autocomplete="off" data-i18n-ph="ph_tty"
+            style="padding: 10px; width: 100%; background: #000; border: 1px solid var(--border-color); color: var(--text-main); outline: none; margin-bottom: 10px;">
+        <button onclick="sendTTYText()" class="btn-reload" data-i18n="btn_tty_send"
+            style="border-color: var(--info); color: var(--info); width: 100%; margin-bottom: 10px;">Send Secure
+            Text</button>
+        <div style="display: flex; gap: 10px; width: 100%;">
+            <button onclick="sendTTYLogo()" class="btn-reload" style="flex: 1;" data-i18n="btn_tty_logo">Send
+                Logo</button>
+            <button onclick="clearTTY()" class="btn-reload" data-i18n="btn_tty_clear"
+                style="flex: 1; border-color: var(--danger); color: var(--danger);">Clear Screen</button>
+        </div>
+        <div id="tty-status" style="font-size: 0.85rem; margin-top: 10px;"></div>
+    </div>
+</div>

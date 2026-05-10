@@ -1,0 +1,46 @@
+<div class="panel">
+    <div class="panel-header" data-i18n="p_admin_h">SEC: ADMIN MANAGEMENT</div>
+    <div class="panel-content" style="padding: 0;">
+        <div style="display: flex; border-bottom: 1px solid var(--border-color);">
+            <button id="nav-view-users" class="user-tab-btn active" onclick="switchUserTab('view-users')"
+                data-i18n="btn_view_users">Ver Usuários</button>
+            <button id="nav-add-user" class="user-tab-btn" onclick="switchUserTab('add-user')"
+                data-i18n="btn_add_user">Adicionar Usuário</button>
+        </div>
+        <div id="view-users" class="user-view active" style="padding: 20px;">
+            <table id="adminsTable">
+                <thead>
+                    <tr>
+                        <th style="width: 40px;"></th>
+                        <th>Username</th>
+                        <th>Role</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <div id="admin-actions-bar"
+                style="margin-top: 20px; padding: 15px; border: 1px dashed var(--border-color); display: none;">
+                <h4 style="margin-bottom: 15px; color: var(--text-muted); font-family: var(--font-mono);">
+                    <span data-i18n="admin_actions">Ações para:</span> <span id="selected-admin-name"
+                        class="neon-text"></span>
+                </h4>
+                <div id="admin-action-buttons" style="display: flex; gap: 10px; flex-wrap: wrap;"></div>
+            </div>
+        </div>
+        <div id="add-user" class="user-view" style="padding: 20px; display: none;">
+            <div style="max-width: 400px; margin: 0 auto; text-align: center;">
+                <h3 style="margin-bottom: 15px; color: var(--info); font-family: var(--font-mono);">Add New Admin</h3>
+                <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px;">Novos usuários são criados
+                    como <b>SUP (Nível 2)</b> por padrão.</p>
+                <input type="text" id="new-admin-user" placeholder="New Username" autocomplete="off"
+                    data-i18n-ph="ph_new_user"
+                    style="padding: 10px; width: 100%; background: #000; border: 1px solid var(--border-color); color: var(--text-main); outline: none; margin-bottom: 10px;">
+                <input type="password" id="new-admin-pass" placeholder="New Password" data-i18n-ph="ph_new_pass"
+                    style="padding: 10px; width: 100%; background: #000; border: 1px solid var(--border-color); color: var(--text-main); outline: none; margin-bottom: 10px;">
+                <button onclick="createAdmin()" class="btn-reload" data-i18n="btn_create_admin"
+                    style="border-color: var(--info); color: var(--info); width: 100%;">Create Administrator</button>
+                <div id="admin-status" style="font-size: 0.85rem; margin-top: 10px;"></div>
+            </div>
+        </div>
+    </div>
+</div>

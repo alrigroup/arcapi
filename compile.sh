@@ -13,7 +13,7 @@ gcc core.c -o core -pthread
 echo "Moving binaries to the main folder..."
 
 mv core ../core
-
+cd .. 
 chmod +x core 
 
 echo "--------------------------------"

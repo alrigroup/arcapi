@@ -1,22 +1,18 @@
-# C Executables
-core
-arc_server
-*.exe
-*.out
-*.o
+# Arquivos de Banco de Dados e Configurações Sensíveis
+db.json
+.env
 
-# Security Keys and Certificates
+# Certificados SSL/TLS (Segurança)
 *.pem
 cert.pem
 key.pem
-*.crt
-*.key
 
-# System Files
-.DS_Store
-Thumbs.db
+# Binários Executáveis Gerados Localmente
+core
+arc_server
+*.o
+*.so
 
-# Frontend Build Directories (In case Vite/React is used inside the web folder)
-node_modules/
-dist/
-.env
+# Arquivos de Log
+*.log
+arc_server.log
