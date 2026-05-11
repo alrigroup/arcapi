@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALRI CWB | Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/manager/dashboard/style.css">
+    <style>
+        /* --------------------------------------------------- */
+        /* MODERN UI OVERRIDES: ROUNDED BORDERS & FLUID MOTION */
+        /* --------------------------------------------------- */
+
+        /* Panels with elegant radius and hover pop */
+        .panel {
+            border-radius: 20px !important;
+            background: rgba(20, 20, 25, 0.3) !important;
+            backdrop-filter: blur(40px) saturate(180%) !important;
+            -webkit-backdrop-filter: blur(40px) saturate(180%) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            border-top: 1px solid rgba(255, 255, 255, 0.2) !important;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(255, 255, 255, 0.03) !important;
+            transition: transform 0.35s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.35s ease !important;
+            overflow: hidden !important;
+        }
+
+        .panel:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.05) !important;
+        }
+
+        /* Interactive elements perfectly rounded */
+        .btn-reload,
+        .tab-btn,
+        .user-tab-btn,
+        .modal-btn,
+        .btn-logout,
+        .theme-btn {
+            border-radius: 8px !important;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+        }
+
+        input,
+        select,
+        textarea {
+            border-radius: 8px !important;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease !important;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            box-shadow: 0 0 12px var(--accent-glow) !important;
+        }
+
+        /* Fluid bouncy buttons */
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            filter: brightness(1.15);
+        }
+
+        button:active:not(:disabled) {
+            transform: translateY(1px) scale(0.98);
+            filter: brightness(0.9);
+        }
+
+        /* Modals with spring physics entrance */
+        .modal-content {
+            border-radius: 18px !important;
+            transform: scale(0.85) translateY(20px);
+            transition: all 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1) translateY(0);
+        }
+
+        /* Bouncy theme dots */
+        .color-dot {
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+        }
+
+        .color-dot:hover {
+            transform: scale(1.35);
+        }
+
+        /* Smooth table hover */
+        table tbody tr {
+            transition: background 0.25s ease !important;
+        }
+
+        table tbody tr:hover {
+            background-color: rgba(255, 255, 255, 0.05) !important;
+        }
+
+        /* Responsive Mobile Overrides */
+        .sidebar-overlay {
+            visibility: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 9998;
+            backdrop-filter: blur(3px);
+            -webkit-backdrop-filter: blur(3px);
+            opacity: 0;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+
+        .sidebar-overlay.active {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                overflow-x: hidden;
+            }
+
+            .app-container {
+                width: 100%;
+                max-width: 100vw;
+                overflow-x: hidden;
+            }
+
+            .mobile-menu-btn {
+                display: inline-flex !important;
+            }
+
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: -280px;
+                height: 100vh;
+                z-index: 9999;
+                background-color: #0a0a0a !important;
+                border-right: 1px solid var(--border, #222);
+                transition: left 0.3s ease;
+                width: 260px;
+                box-shadow: 2px 0 10px rgba(0, 0, 0, 0.8);
+            }
+
+            .sidebar.active {
+                left: 0;
+            }
+
+            .content-area {
+                margin-left: 0 !important;
+                padding: 70px 15px 15px !important;
+                width: 100% !important;
+                max-width: 100vw !important;
+                box-sizing: border-box;
+                overflow-x: hidden;
+            }
+
+            /* Sticky Header for Mobile */
+            .theme-config {
+                position: fixed;
+                top: 0;
+                right: 0;
+                left: 0;
+                width: 100%;
+                background: var(--bg-card, #111);
+                border-bottom: 1px solid var(--border);
+                padding: 10px 15px;
+                display: flex;
+                justify-content: flex-end;
+                align-items: center;
+                z-index: 900;
+                box-sizing: border-box;
+                backdrop-filter: blur(10px);
+            }
+
+            .theme-panel {
+                top: 60px !important;
+                right: 15px !important;
+            }
+
+            /* Tables */
+            table,
+            .table-container {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+                width: 100%;
+                max-width: 100%;
+                -webkit-overflow-scrolling: touch;
+                border: 0;
+            }
+
+            /* Modals */
+            .modal-content {
+                width: 95%;
+                max-width: 95%;
+                padding: 20px;
+                box-sizing: border-box;
+            }
+
+            .modal-actions {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .modal-btn {
+                width: 100%;
+            }
+
+            /* Touch Targets & Inputs */
+            input,
+            select,
+            textarea {
+                font-size: 16px !important;
+                max-width: 100%;
+                box-sizing: border-box;
+            }
+
+            /* Prevents iOS Zoom */
+            button,
+            .tab-btn {
+                min-height: 44px;
+            }
+
+            /* Panels & Stacking */
+            .panel {
+                margin-bottom: 15px;
+                max-width: 100%;
+                overflow: hidden;
+            }
+
+            .flex-row {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                gap: 15px;
+            }
+
+            .flex-row>div {
+                width: 100%;
+            }
+
+            /* Fix inline flex elements wrapping gracefully */
+            .panel-content>div[style*="display: flex"] {
+                flex-wrap: wrap !important;
+                gap: 10px;
+            }
+
+            .switch {
+                align-self: flex-start;
+                margin-top: 10px;
+            }
+
+            .btn-reload {
+                width: 100% !important;
+                margin-bottom: 10px;
+            }
+
+            /* Chart responsive fix */
+            canvas#metricsChart {
+                max-width: 100%;
+                height: 250px !important;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .mobile-menu-btn {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-grid"></div>
+    <div class="glow-orb"></div>
+
+    <div class="app-container">
+        <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+        <!-- Sidebar de Navegação -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <img src="https://i.ibb.co/Fk4sSC7X/ALRI-SF-W.png" alt="ALRI Group" class="sidebar-logo">
+                <div class="brand-subtext">ALRI CWB DASHBOARD</div>
+            </div>
+            <ul class="nav-links">
+                <li><button id="nav-analytics" class="tab-btn active" onclick="switchTab('tab-analytics', this)"
+                        data-i18n="tab_analytics">Analytics &
+                        Firewall</button></li>
+                <li><button id="nav-tty" class="tab-btn" onclick="switchTab('tab-tty', this)"
+                        data-i18n="tab_tty">Terminal
+                        (TTY)</button></li>
+                <li><button id="nav-logs" class="tab-btn" onclick="switchTab('tab-logs', this)"
+                        data-i18n="tab_logs">System
+                        Logs</button></li>
+                <li><button id="nav-users" class="tab-btn" onclick="switchTab('tab-users', this)"
+                        data-i18n="tab_users">Management</button></li>
+                <li><button id="nav-settings" class="tab-btn" onclick="switchTab('tab-settings', this)"
+                        data-i18n="tab_settings">Settings</button></li>
+                <li><button id="nav-update" class="tab-btn" onclick="switchTab('tab-update', this)"
+                        data-i18n="tab_update">Updates</button></li>
+            </ul>
+            <div class="sidebar-footer">
+                <span id="err-indicator" class="network-error">⚠ Connection Error</span>
+                <button onclick="logout()" class="btn-logout">LOGOUT</button>
+            </div>
+        </nav>
+
+        <!-- Área de Conteúdo Principal -->
+        <main class="content-area">
+
+            <div class="theme-config">
+                <button class="theme-btn mobile-menu-btn" onclick="toggleSidebar()" title="Menu"
+                    style="margin-right: auto;">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <button class="theme-btn" onclick="toggleLanguage()" id="langBtn" title="Idioma">
+                    <i class="fas fa-globe"></i> <span id="langText"
+                        style="font-size: 0.8rem; margin-left: 5px;">PT-BR</span>
+                </button>
+                <button class="theme-btn" onclick="toggleThemePanel()" title="Aparência">
+                    <i class="fas fa-cog"></i>
+                </button>
+                <div id="themePanel" class="theme-panel">
+                    <div class="color-dot" style="background: #ff003c;"
+                        onclick="setTheme('#ff003c', 'rgba(255,0,60,0.3)')" title="Vermelho"></div>
+                    <div class="color-dot" style="background: #0088ff;"
+                        onclick="setTheme('#0088ff', 'rgba(0,136,255,0.3)')" title="Azul"></div>
+                    <div class="color-dot" style="background: #00ff41;"
+                        onclick="setTheme('#00ff41', 'rgba(0,255,65,0.3)')" title="Verde"></div>
+                    <div class="color-dot" style="background: #00f2ff;"
+                        onclick="setTheme('#00f2ff', 'rgba(0,242,255,0.3)')" title="Ciano"></div>
+                    <div class="color-dot" style="background: #bc00ff;"
+                        onclick="setTheme('#bc00ff', 'rgba(188,0,255,0.3)')" title="Roxo"></div>
+                    <div class="color-dot" style="background: #ffea00;"
+                        onclick="setTheme('#ffea00', 'rgba(255,234,0,0.3)')" title="Amarelo"></div>
+                    <div class="color-dot" style="background: #ffffff;"
+                        onclick="setTheme('#ffffff', 'rgba(255,255,255,0.3)')" title="Branco"></div>
+                </div>
+            </div>
+
+            <!-- ABA 1: Analytics & Firewall -->
+            <section id="tab-analytics" class="tab-content active"></section>
+            <!-- ABA 2: Terminal TTY -->
+            <section id="tab-tty" class="tab-content"></section>
+            <!-- ABA 3: System Logss -->
+            <section id="tab-logs" class="tab-content"></section>
+            <!-- ABA 4: Gerenciamento de Usuários -->
+            <section id="tab-users" class="tab-content"></section>
+            <!-- ABA 5: Configurações -->
+            <section id="tab-settings" class="tab-content"></section>
+            <!-- ABA 6: Atualizações e Hot-Reload -->
+            <section id="tab-update" class="tab-content"></section>
+        </main>
+    </div>
+
+    <!-- Sudo Mode Modal -->
+    <div id="adminActionModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 id="modalTitle">Confirm Action</h3>
+            <div id="modalBody" style="margin-bottom: 20px; color: var(--text-muted); font-size: 0.9rem;"></div>
+            <input type="password" id="modalConfirmPass" placeholder="Sudo Password" autocomplete="off"
+                data-i18n-ph="ph_sudo_pass">
+            <div class="modal-actions">
+                <button class="modal-btn cancel" onclick="modalManager.cancel()" data-i18n="btn_cancel">Cancel</button>
+                <button class="modal-btn confirm" onclick="modalManager.confirm()"
+                    data-i18n="btn_confirm">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/manager/dashboard/script.js"></script>
+</body>
+
+</html>

@@ -1,108 +1,50 @@
-<div align="center">
-  <img src="https://i.ibb.co/Fk4sSC7X/ALRI-SF-W.png" width="150" alt="ALRI Group Logo">
+# ALRI CWB 🚀
 
-  # ARCAPI
-  **Developed by ALRI Development**
-  
-  *A micro-framework and Web server written from scratch in C.*
-</div>
+**ALRI CWB** is a high-performance, modular ecosystem and micro-framework written entirely in native **C**. Designed for zero-downtime environments, it features End-to-End Encryption (E2EE), native PostgreSQL integration, and an advanced Hot-Reload engine.
 
----
+## 🏗️ 3-Pillar Architecture
 
-### ⚠️ Notice & Scope
-> **Notice:** This is a "hobby" project created for study, testing, and personal experimentation. It is not intended for a large-scale corporate or commercial environment without extra structural reviews, being focused on learning and controlling low-level architectures.
+- **`/ar-core` (Orchestrator)**: The uninterruptible Master Process. It handles system signals (SIGUSR1/SIGUSR2), TTY rendering, and safe hot-recompilation.
+- **`/ar-bemf` (Framework)**: The agnostic network engine (Back End Micro Framework). It manages TCP Sockets, OpenSSL, TCP Fragmentation, and Universal Rate Limiting.
+- **`/ar-ws` (Web Services)**: The business logic layer. Contains your endpoints, PostgreSQL DAO, Zero-Trust session management, and the Liquid Glass Dashboard.
 
-> **OS Compatibility:** The project is currently **100% focused on Linux/Unix environments** and relies on system-specific functions like `fork/exec`. **There is no native support for Windows.** To run it on a Windows machine, you must use WSL (Windows Subsystem for Linux).
+## ✨ Key Features
 
-### 📌 About the Project
-**ARCAPI** is a micro-framework and Web server written from scratch in **C**. Its main goal is to deliver an ultra-lightweight modular environment, controlling everything from Socket connections to the final HTTP/HTTPS response.
+- **PostgreSQL Native**: Fully integrated with `libpq` using Prepared Statements to prevent SQL Injection.
+- **Zero-Trust Security**: Strict endpoint authorization, Sudo-Mode for critical actions, and restricted static asset serving.
+- **Universal Rate Limiting**: Built-in L7 DDoS and Brute-Force protection (e.g., 5 req/min for logins, 100 req/min for general API endpoints).
+- **Hot-Reload (Batch Sync)**: Update your server logic in production without dropping connections. Uses a highly optimized binary stream over TCP.
+- **Liquid Glass UI**: A state-of-the-art administrative dashboard featuring glassmorphism, animated mesh gradients, and dual-language (EN/PT) support.
+- **Zero-Copy Delivery**: Utilizes Linux `sendfile()` for extreme performance when serving static files.
 
-The system abstracts the entire backend part, leaving a ready-to-use flow for you to host and serve static applications, SPAs (created in React, Vite, Angular, etc), and even build a REST API using C.
+## 🚀 Getting Started
 
-### 🛡️ Protection & License
-This project, including all its source code, scripts, and digital assets, is strictly protected by the **[ARGLP - ALRI GROUP LICENSE PERMISSIVE](https://raw.githubusercontent.com/alrigroup/licenses/refs/heads/main/LICENSE-ARGLP)**.
-* You can use, modify, and distribute this project as long as you credit **ALRI Group** and follow the terms of the license.
-
----
-
-### ⚡ Key Features
-* **Native HTTPS:** Out-of-the-box secure support using the OpenSSL library.
-* **Automatic Redirect:** Isolated thread that listens on port 80 and automatically forwards all HTTP traffic to HTTPS.
-* **Simple Router (`api.c`):** Allows easy registration of GET/POST routes. With the generic `sendpage("folder")` function, it serves your application's HTML and all `.css` and `.js` files automatically.
-* **Anti-Path Traversal Security:** Upon startup, the server scans the local files in the `/web` folder and maps what exists in memory, denying any malicious access attempting to fetch system files (`../../`).
-* **Self-Managed:** The base program (`core.c`) handles compiling, isolating, and running your main server (`arc_server`) using `fork/exec`.
-
----
-
-### 🚀 How to Run
-
-**1. System Dependencies**
-Since the server was built in C with SSL support, you will need the following packages on your Linux/WSL:
+### 1. Prerequisites
+Ensure you have the required C libraries installed (Debian/Ubuntu):
 ```bash
-sudo apt update
-sudo apt install build-essential libssl-dev
+sudo apt-get update
+sudo apt-get install build-essential libssl-dev libpq-dev
 ```
 
-**2. SSL Certificates (Required)**
-The server will not start without valid encryption keys in the root folder! Since the `.gitignore` accompanying the project prevents these keys from leaking to github, **you must generate them locally** (or copy real keys):
-```bash
-# In the project root, generate a self-signed test certificate:
-openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -sha256 -days 365 -nodes
+### 2. Environment Setup
+Create a `.env` file in the root directory with your PostgreSQL connection string:
+```env
+DATABASE_URL=host=localhost dbname=alri user=postgres password=your_password
 ```
 
-**3. Compilation and Execution**
-In the project's main folder, use the automation script for the initial build:
+### 3. Build & Run
+Use the provided build script to compile the orchestrator and the application module:
 ```bash
-# Grant permission and compile
 chmod +x compile.sh
 ./compile.sh
-
-# Start the main system (Requires sudo to access low ports 80/443)
 sudo ./core
 ```
 
-Done! Access in your browser: `https://localhost` (or the IP where you are running it).
+## 🛡️ Security & Auditing
+All administrative actions are securely logged into the `audit_logs` table in PostgreSQL, tracking timestamps, IP addresses (with proxy bypassing protection), and specific events.
+
+## 📄 Documentation
+For a detailed dive into the framework's internal API (`server.h`), HTTP Request handling, and routing, please read the Official Documentation.
 
 ---
-
-### 🛠️ Creating New Pages and Sites
-The modular architecture makes everything very easy:
-
-1. Create a folder inside `web/` with your site/SPA. (Ex: `web/dashboard`)
-2. Open the `source/api.c` file.
-3. Register your route at the end of the file and point to the created folder:
-
-```c
-// Inside api_init()...
-add_route("/dashboard", "GET", dashboard_handler);
-
-// Your new handler pointing to the folder
-static void dashboard_handler(ClientConnection *conn, HttpRequest *req) {
-    sendpage(conn, "dashboard"); 
-}
-```
-The `sendpage` function will do all the hard work of fetching `index.html` and releasing the assets.
-
----
-
-### 👤 Credits
-* **Developer Company:** [ALRI Development](https://github.com/alrigroup/)
-* **Lead Developer:** [AlexAR](https://github.com/alexsanderalri)
-
-
----
-
-### 📧 Contact
-For inquiries about **ALRI Group**'s portfolio of solutions or technical questions:
-
-[![Instagram](https://img.shields.io/badge/Instagram-%23E4405F.svg?style=for-the-badge&logo=Instagram&logoColor=white)](https://www.instagram.com/alrigroup)
-[![GitHub](https://img.shields.io/badge/GitHub-black?style=for-the-badge&logo=github&logoColor=white)](https://github.com/alrigroup)
-[![Discord](https://img.shields.io/badge/Discord-%235865F2.svg?style=for-the-badge&logo=discord&logoColor=white)](https://dsc.gg/alrigroup)
-
-<br>
-
-<div align="center">
-  <i>"Building the future, one line of code at a time."</i>
-  <br>
-  <p>Copyright © 2020-2026 <b>ALRI Group</b></p>
-</div>
+*Developed by ALRI Development.*

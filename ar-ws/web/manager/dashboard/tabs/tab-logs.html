@@ -1,0 +1,53 @@
+<div class="panel">
+    <div class="panel-header">
+        <div class="tab-nav-internal">
+            <button class="log-tab-btn active" id="nav-console-logs" onclick="switchLogTab('console-logs')"
+                data-i18n="tab_logs">Console Logs</button>
+            <button class="log-tab-btn" id="nav-admin-logs" onclick="switchLogTab('admin-logs')"
+                data-i18n="tab_system_logs">System Logs</button>
+        </div>
+    </div>
+    <div class="panel-content" style="padding: 0;">
+        <!-- View: Console Logs -->
+        <div id="console-logs" class="log-view" style="display: block;">
+            <div id="terminal"></div>
+        </div>
+
+        <!-- View: Admin Audit Logs -->
+        <div id="admin-logs" class="log-view" style="display: none; padding: 15px;">
+            <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+                <select id="audit-filter-type" class="arc-input" style="width: 150px;" onchange="fetchAuditLogs()">
+                    <option value="">All Events</option>
+                    <option value="LOGIN_SUCCESS">Login Success</option>
+                    <option value="LOGIN_FAIL">Login Fail</option>
+                    <option value="USER_CREATED">User Created</option>
+                    <option value="USER_DELETED">User Deleted</option>
+                    <option value="ROLE_CHANGED">Role Changed</option>
+                    <option value="PASSWORD_RESET">Password Reset</option>
+                    <option value="SECURITY_ALERT">Security Alert</option>
+                </select>
+                <input type="text" id="audit-filter-user" class="arc-input" placeholder="User..." style="width: 120px;"
+                    onkeyup="if(event.key==='Enter') fetchAuditLogs()">
+                <input type="text" id="audit-filter-ip" class="arc-input" placeholder="IP Address..."
+                    style="width: 140px;" onkeyup="if(event.key==='Enter') fetchAuditLogs()">
+                <button class="btn-primary" onclick="fetchAuditLogs()" style="padding: 5px 15px;">Search</button>
+                <button class="btn-danger" onclick="clearAuditLogs()"
+                    style="padding: 5px 15px; margin-left: auto;">Clear History</button>
+            </div>
+            <div class="table-container">
+                <table id="auditTable">
+                    <thead>
+                        <tr>
+                            <th data-i18n="th_timestamp">Timestamp</th>
+                            <th data-i18n="th_event">Event</th>
+                            <th data-i18n="th_admin">Admin</th>
+                            <th data-i18n="th_description">Description</th>
+                            <th data-i18n="th_ip_origin">IP Origin</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

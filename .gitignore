@@ -1,18 +1,25 @@
-# Arquivos de Banco de Dados e Configurações Sensíveis
-db.json
-.env
+# Build artifacts
+*.o
+core
+ar_server
+*.out
+*.exe
 
-# Certificados SSL/TLS (Segurança)
-*.pem
+# Logs
+*.log
+
+# Secrets & Environment
+.env
 cert.pem
 key.pem
 
-# Binários Executáveis Gerados Localmente
-core
-arc_server
-*.o
-*.so
+# Local configurations & DB cache
+db.json
 
-# Arquivos de Log
-*.log
-arc_server.log
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDEs and Editors
+.vscode/
+.idea/

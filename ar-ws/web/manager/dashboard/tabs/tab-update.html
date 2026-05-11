@@ -1,0 +1,36 @@
+<div class="panel">
+    <div class="panel-header" data-i18n="p_update_h">HOT-RELOAD: FILE MANAGER & RESTART</div>
+    <div class="panel-content upload-section">
+        <p style="color: var(--text-muted); font-size: 0.9rem;" data-i18n="p_update_info">
+            Select the project root folder. The system will sync only modified files (Smart Sync SHA-256) with E2EE
+            security.
+        </p>
+        <label for="fileUpload" class="upload-label" id="dropZone">
+            <span id="fileNameDisplay" data-i18n="span_drop">[ Click to Select Folder (Sync) ]</span>
+        </label>
+        <input type="file" id="fileUpload" webkitdirectory directory multiple>
+
+        <div id="syncPlan"
+            style="margin-top: 15px; display: none; text-align: left; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+            <div style="font-weight: bold; margin-bottom: 8px; color: var(--accent);">Sync Plan:</div>
+            <ul id="planList"
+                style="list-style: none; padding: 0; max-height: 200px; overflow-y: auto; font-family: 'Courier New', Courier, monospace; font-size: 0.8rem;">
+            </ul>
+        </div>
+
+        <div id="confirmArea"
+            style="display: none; margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+            <p style="font-size: 0.85rem; margin-bottom: 10px;">Select Rebuild Action:</p>
+            <select id="restartMode"
+                style="padding: 10px; width: 100%; background: #000; border: 1px solid var(--border-color); color: var(--text-main); outline: none; margin-bottom: 15px;">
+                <option value="none" data-i18n="opt_none">Save Only (No Reload)</option>
+                <option value="api" data-i18n="opt_api">Restart API (Recompile ar-ws)</option>
+                <option value="core" data-i18n="opt_core">Full Core Restart (Recompile All)</option>
+            </select>
+            <button id="btnReload" class="btn-reload" onclick="confirmAndSync()" data-i18n="btn_reload">Confirm &
+                Sync</button>
+        </div>
+
+        <div id="updateStatus" style="font-size: 0.85rem; margin-top: 10px;"></div>
+    </div>
+</div>

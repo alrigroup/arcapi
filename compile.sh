@@ -1,22 +1,21 @@
 #!/bin/bash
 
-# Ensure the script has execution permission on itself (auto-correction)
+# Ensure the script has execution permission on itself
 chmod +x "$0" 2>/dev/null
 
-# Enter the source folder. If the folder does not exist, the script stops here (-e)
-cd source || { echo "Error: 'source' folder not found!"; exit 1; }
+echo "Compiling ALRI CWB Ecosystem..."
 
-echo "Compiling ARCAPI..."
+# 1. Compile Core Orchestrator
+echo "Building AR-CORE..."
+gcc ar-core/main.c -o core -pthread -w
 
-gcc core.c -o core -pthread
+# 2. Compile Server/API Module using Makefile
+echo "Building AR-WS (WebServices) & AR-BEMF (Micro Framework)..."
+make -C ar-ws
 
-echo "Moving binaries to the main folder..."
-
-mv core ../core
-cd .. 
-chmod +x core 
+chmod +x core arc_server
 
 echo "--------------------------------"
-echo "ARCAPI Compilation Completed!"
+echo "ALRI CWB Compilation Completed!"
 echo "Run: sudo ./core"
 echo "--------------------------------"

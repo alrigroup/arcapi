@@ -1,166 +1,239 @@
-# ARCAPI - Official Documentation
+# ALRI CWB - Official Documentation
 **Developed by ALRI Development**
 
-**ARCAPI** is a micro-framework and Web server written from scratch in **C**. It is designed to be lightweight, modular, and provide full control, from TCP Socket connections to the assembly of the final HTTP/HTTPS response.
+**ALRI CWB** is an advanced modular ecosystem consisting of a micro-framework and Web server written in native **C**. Designed for ultra-high performance and availability systems, it abstracts the complexity of networking (Sockets, TCP, TLS) and process orchestration, allowing you to focus exclusively on business logic.
+
+Inspired by the simplicity of Flask and the robustness of enterprise frameworks, ALRI CWB offers fluid routing, automatic JSON parsing, Hot-Reload, and native support for E2EE (End-to-End Encryption).
 
 ---
 
-## 1. System Architecture
-
-The project is divided into three main layers:
-
-1. **`core.c` (Process Manager):** Responsible for starting the system, compiling the source codes (`server.c` and `api.c`), applying startup animations, and creating the child process (`arc_server`) via `fork()`. It also manages safe shutdown (process cleanup on `SIGINT`).
-2. **`server.c` / `server.h` (Core Server):** The low-level layer. Strictly handles sockets, threads (`pthread`), OpenSSL (for HTTPS), HTTP requests (`parse`), vulnerability mitigation (Path Traversal), and raw responses.
-3. **`api.c` / `api.h` (Application Layer):** The developer interface. Contains the router, handles static file delivery (`.html`, `.js`, `.css`), SPA resources, and custom user functions.
+## 📑 Index
+1. [General Architecture](#1-general-architecture)
+2. [Quickstart Guide](#2-quickstart-guide)
+3. [The Framework (ar-bemf) - Developer Guide](#3-the-framework-ar-bemf---developer-guide)
+    * Handling Requests (HttpRequest)
+    * Responses and JSON
+    * Serving Static Files
+4. [The Application (ar-ws) - Business Rules](#4-the-application-ar-ws---business-rules)
+    * Routing
+    * Authentication and RBAC
+    * Persistent Database
+5. [The Orchestrator (ar-core) - Lifecycle](#5-the-orchestrator-ar-core---lifecycle)
+6. [Synchronization Engine (Hot-Reload)](#6-synchronization-engine-hot-reload)
 
 ---
 
-## 2. Data Structures
+## 1. General Architecture
 
-When building API endpoints, you will frequently interact with the HTTP request object and the client connection.
+The project breaks the monolithic pattern, dividing responsibilities into three strict directories and modules:
 
-### `HttpRequest`
-Structure containing all processed request data:
+* **`/ar-core` (The Manager):** Uninterruptible Master Process. Keeps the server alive, intercepts crashes, and handles hot recompilations.
+* **`/ar-bemf` (The HTTP Engine):** The Micro-framework itself. Handles Sockets, OpenSSL, TCP Fragmentation, Header and Body Parsing. It is 100% agnostic and does not know your database or routes.
+* **`/ar-ws` (Your Application):** This is where you program. It contains your endpoints, admin panel, user logic, and static files (HTML/JS/CSS).
+
+---
+
+## 2. Quickstart Guide
+
+To create an endpoint, you only need to follow **2 steps**:
+
+**Step 1: Create the Handler function** (Ex: in `ar-ws/routes/route_hello.c`)
+```c
+#include "../../ar-bemf/server.h"
+
+void hello_handler(ClientConnection *conn, HttpRequest *req) {
+    // Responds with plain text
+    server_send_response(conn, 200, "text/plain", "Hello World from ALRI CWB!");
+}
+```
+
+**Step 2: Register the Route** (In `ar-ws/endpoints.c`)
+```c
+void register_all_endpoints() {
+    // ... system routes ...
+    add_route("/hello", "GET", hello_handler);
+}
+```
+And that's it. On the next compilation, `https://localhost/hello` will return your string.
+
+---
+
+## 3. The Framework (`ar-bemf`) - Developer Guide
+
+The framework's base library is exposed via `server.h`. It handles abstract pointers ensuring memory safety.
+
+### 3.1. Understanding the Request Object (`HttpRequest`)
+When a request arrives at your handler function, the `req` object already contains all pre-processed and validated data from the network engine.
+
 ```c
 typedef struct {
-    char *method;              // E.g.: "GET", "POST"
-    char *path;                // E.g.: "/home", "/api/data"
-    char *query_params;        // E.g.: "id=1&user=2" (after the '?')
-    char *cookies;             // Cookie strings
-    char *body;                // Request body (JSON/Text payload)
-    HttpHeader headers[50];    // Array containing key/value pairs of the headers
-    int header_count;          // Number of headers found
-    PathParam path_params[20]; // Parameters extracted from the route (e.g.: /user/:id)
-    int path_param_count;      // Number of path parameters
+    char *method;              // GET, POST, PUT, DELETE
+    char *path;                // Requested Route (/api/users)
+    char *query_params;        // Raw query string (id=1&sort=asc)
+    char *body;                // Raw request body (JSON, Text)
+    int header_count;          // Number of headers read
+    // ... parsed queries and references structures ...
 } HttpRequest;
 ```
 
-### `ClientConnection`
-Um ponteiro opaco (opaque pointer) que esconde detalhes do Socket e SSL do cliente. Ele deve ser passado para todas as funções de resposta do ARCAPI.
+### 3.2. Extracting Request Data
+Use the thread-safe helper functions to read information cleanly:
 
----
-
-## 3. Criando Rotas e Endpoints
-
-As rotas são definidas no arquivo `source/api.c` dentro da função `api_init()`.
-
-### 3.1 Registrando uma Rota
-A função `add_route` é utilizada para registrar um endpoint.
 ```c
-void add_route(const char *path, const char *method, RouteHandler handler);
-```
-**Exemplo:**
-```c
-add_route("/api/users", "GET", get_users_handler);
+// Get a header (Case-Insensitive)
+const char *token = get_header(req, "Authorization");
+
+// Get parameters passed in the URL (?id=5&status=active)
+const char *id = get_query_param(req, "id"); 
+
+// Get parameters passed directly in the dynamic Path (e.g.: /users/:id)
+const char *path_id = get_path_param(req, "id");
 ```
 
-### 3.2 Construindo um Handler
-O `RouteHandler` é uma função de callback com a seguinte assinatura:
+> **Attention:** The strings returned by these functions belong to the request's lifecycle in memory (Buffer). Do not attempt to `free()` them manually.
+
+### 3.3. Receiving JSON Payload (Tutorial)
+The framework has full and secure integration (leak-free) with the `cJSON` library. Parsing is done on-demand to save CPU.
+
 ```c
-void meu_handler(ClientConnection *conn, HttpRequest *req) {
-    // Lógica da Rota aqui...
-}
-```
-
-### 3.3 Lendo Parâmetros e Headers
-O ARCAPI provê funções seguras para buscar dados da requisição:
-* `get_header(req, "Authorization")`: Busca um header (case-insensitive).
-* `get_query_param(req, "id")`: Puxa o valor do parâmetro passado na URL (ex: `?id=5`).
-* `get_path_param(req, "id")`: Puxa parâmetros mapeados dinamicamente.
-
----
-
-## 4. Respondendo Requisições
-
-O servidor expõe diversos métodos em `server.h` para retornar informações ao cliente.
-
-### 4.1 Respostas em Texto Simples / HTML Customizado
-```c
-void server_send_response(ClientConnection *conn, int status, const char *content_type, const char *body);
-```
-**Uso:**
-```c
-server_send_response(conn, 200, "text/plain", "Olá, Mundo!");
-```
-
-### 4.2 Respondendo em JSON (cJSON integrado)
-O ARCAPI já traz suporte nativo a JSON através da biblioteca cJSON.
-```c
-void server_send_json(ClientConnection *conn, int status, cJSON *json_obj);
-```
-**Uso:**
-```c
-static void api_data_handler(ClientConnection *conn, HttpRequest *req) {
-    cJSON *response = cJSON_CreateObject();
-    cJSON_AddStringToObject(response, "status", "success");
-    cJSON_AddNumberToObject(response, "code", 200);
+void login_api_handler(ClientConnection *conn, HttpRequest *req) {
+    // The framework parses and stores the document in RAM associated with the request
+    cJSON *json = parse_json_body(req);
     
-    // A função limpa o cJSON da memória automaticamente
-    server_send_json(conn, 200, response);
+    if (!json) {
+        server_send_response(conn, 400, "application/json", "{\"error\": \"Invalid JSON\"}");
+        return;
+    }
+
+    cJSON *user = cJSON_GetObjectItem(json, "username");
+    
+    if (user && cJSON_IsString(user)) {
+        printf("Received login for: %s\n", user->valuestring);
+    }
+    
+    // IMPORTANT: Never free the `json` (req->json_doc) manually!
+    // The orchestrator clears the JSON parse at the end of the request cycle automatically.
 }
 ```
 
-### 4.3 Recebendo JSON no Corpo da Requisição
+### 3.4. Sending Responses
+To respond to the client, you use the abstract `ClientConnection *conn` structure. The framework will set the HTTP flags, inject appropriate Headers, inject tracking Cookies, and finalize the clean Socket connection.
+
+#### HTML / Text Response
 ```c
-cJSON* parse_json_body(HttpRequest *req);
+server_send_response(conn, 200, "text/html", "<h1>Hello!</h1>");
 ```
 
-### 4.4 Redirecionamentos
-Redireciona o cliente HTTP via Status 302 Found.
+#### Redirect Response
 ```c
-void server_redirect(ClientConnection *conn, const char *url);
+server_redirect(conn, "/manager/login");
 ```
 
----
-
-## 5. Servindo Arquivos e Páginas Dinâmicas
-
-O framework possui um recurso robusto para lidar com Single Page Applications (SPAs) e sites estáticos localizados na pasta `/web`.
-
-### 5.1 Envio Simples de Páginas Web
-A função utilitária `sendpage` resolve automaticamente `index.html`, `main.html` ou entradas de pastas `dist/` do Vite/Webpack.
-
-**Exemplo de integração no `api.c`:**
+#### Dynamic JSON Response (The Correct Way)
 ```c
-static void dashboard_handler(ClientConnection *conn, HttpRequest *req) {
-    // Irá procurar por web/dashboard/index.html automaticamente
-    sendpage(conn, "dashboard");
+void api_metrics_handler(ClientConnection *conn, HttpRequest *req) {
+    // Create the cJSON object normally
+    cJSON *resp = cJSON_CreateObject();
+    cJSON_AddStringToObject(resp, "status", "online");
+    cJSON_AddNumberToObject(resp, "users_active", 50);
+
+    // By calling 'server_send_json', AR-BEMF compiles the string, 
+    // sends it over the network via TLS, and IMMEDIATELY destroys (cJSON_Delete) the object
+    // to prevent any Memory Leak.
+    server_send_json(conn, 200, resp);
 }
 ```
 
-### 5.2 Requisições de Assets Internos
-O roteador (`api_request_handler`) é inteligente o suficiente para interceptar pedidos de arquivos `.js`, `.css`, `.png` e `.jpg` que chegam para as rotas das pastas e servi-los diretamente da pasta correta no sistema de arquivos, antes mesmo de cair nos fallbacks da API (404).
+#### Serving Files from Disk
+Sends files to the client using optimized Chunked Streams, ideal for videos, large images, or HTML without using much RAM. Natively protected against Path Traversal (`../`).
+```c
+server_serve_file(conn, "web/img/logo.png", "image/png");
+```
 
 ---
 
-## 6. Segurança e Performance
+## 4. The Application (`ar-ws`) - Business Rules
 
-### Modo Híbrido Automático (HTTP/HTTPS)
-Quando configurado para `MODE_SECURE`, o servidor inicia o HTTPS na porta `443` (usando `cert.pem` e `key.pem`) e **automaticamente sobe uma Thread Redirecionadora na porta `80`**, aplicando um redirect `301 Moved Permanently` para o IP seguro.
+This module was designed with resilient administrative panels and complex REST APIs in mind.
 
-### Proteção de Path Traversal
-Para evitar ataques de leitura do filesystem (`../../etc/passwd`), o ARCAPI executa a função `scan_web_directory` no início do boot. Ele varre todos os arquivos disponíveis na pasta `web/` e os coloca em uma lista de aprovação alocada na memória (`allowed_paths`).
+### 4.1. The Persistent Database (PostgreSQL)
+ALRI CWB utilizes PostgreSQL as its primary data store, ensuring ACID compliance, strong data integrity, and enterprise-grade performance. The Data Access Object (DAO) layer is strictly isolated in `ar-ws/core/database.c`.
 
-Qualquer tentativa de requisição usando `..` ou buscando arquivos não indexados resultará num **Acesso Negado Silencioso**.
+**How it works:**
+* Connection state and auto-reconnect are handled natively. If the database goes offline, the server gracefully returns `503 Service Unavailable` for protected routes.
+* **Security:** All queries use Prepared Statements (`PQexecParams`), making SQL Injection impossible.
+* The system uses an idempotent initialization process to create required tables (`users`, `audit_logs`, `system_config`) on boot.
+* **Configuration:** Connection parameters are securely loaded from a local `.env` file using the `DATABASE_URL` key.
+
+### 4.2. Security and Session Control
+The library handles persistent in-memory sessions and heavy mitigations against attacks.
+
+1. **Universal Rate Limiting:** Built-in protection against L7 DDoS and Brute Force attacks. Login endpoints are limited to 5 requests per minute per IP, while general endpoints allow up to 100 requests per minute (`429 Too Many Requests`).
+2. **Anti-Brute Force:** If an IP fails an administrative password 5 times, an algorithmic Firewall lockout occurs, preventing eviction bypass under stress.
+3. **Timing-Attack Security:** Token and Password comparisons (`constant_time_compare`) evaluate the entire buffer bit-by-bit so that Hackers cannot discover tokens based on server response time.
+3. **RBAC (Role-Based Access Control):** 
+    * Level `0`: ROOT (Full Access, TTY, Updates, Deletions).
+    * Level `1`: ADMIN (Can see logs, manage other admins).
+    * Level `2`: SUP (Restricted viewer).
+5. **Zero-Trust Access:** Static assets in the `/manager/` directory are strictly protected. The server verifies active sessions before serving any administrative HTML, JS, or CSS.
+
+### 4.3. Sudo Mode
+Critical infrastructure routes (`/manager/api/upload`, `/manager/api/delete`, `/manager/api/system/restart`) intercept the payload requesting the Sudo password (`confirm_pass`). The system revalidates the raw password against the PostgreSQL hash via Zero-Trust before allowing changes to the filesystem or database.
+
+### 4.4. Telemetry and Audit Logs
+The framework separates logs into two categories:
+* **Console Logs (`ar_log`)**: Infrastructure telemetry printed to the TTY, stored in memory, and saved to `ar_server.log`.
+* **System Logs (Audit)**: Administrative actions are securely persisted in the PostgreSQL `audit_logs` table, tracking `event_type`, `admin_user`, `ip_address`, and `description`. They are accessible via the Dashboard with advanced filtering and timezone localization.
+
+```c
+// Types: INFO, WARN, ERROR, MAP
+ar_log("INFO", "User %s logged in successfully.", username);
+ar_log("ERROR", "Connection failure with database ID: %d", req_id);
+```
 
 ---
 
-## 7. Como Executar
+## 5. The Orchestrator (`ar-core`) - Lifecycle
 
-O programa necessita ser executado no Linux / Subsistema WSL com o pacote padrão `build-essential` e `libssl-dev`.
+Unlike PHP scripts or Node.js (PM2), here you are dealing with processes at the Operating System level under the C hood.
 
-1. Gere seus certificados (Para testes locais):
-   ```bash
-   openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -sha256 -days 365 -nodes
-   ```
-2. Conceda permissão e compile o sistema de bootstrap:
-   ```bash
-   chmod +x compile.sh
-   ./compile.sh
-   ```
-3. Execute utilizando privilégios elevados para acesso às portas 80/443:
-   ```bash
-   sudo ./core
-   ```
-   
-O **Builder Embutido** se encarregará de compilar suas modificações em código dinamicamente e subir os novos binários do `arc_server`.
+**The Process Dance (Fork/Exec):**
+1. You run `sudo ./core`.
+2. The `core` (Parent Process PID 1) displays the logo and compiles (make) the API.
+3. The `core` calls `fork()`. It creates the `arc_server` (Child Process PID 2).
+4. The `arc_server` opens the Ports (443 and 80) and handles billions of requests. The `core` enters an idle loop, consuming zero processing.
+
+**Fault Tolerance:**
+If the server suffers a violent crash (Segfault/Memory Access Violation), it dies. The Orchestrator notices and restarts the service instantly.
+
+---
+
+## 6. Synchronization Engine (Hot-Reload)
+
+The biggest innovation of ALRI CWB V2.0. Syncing the production environment never required Git Push, FTP, or dangerous network interruptions. The server performs "Hot" updates.
+
+### 6.1 How the Magic Happens
+The protocol avoids `multipart/form-data` and uses a **Chunked Binary Stream (Batch Sync)** for ultra-high performance, protected against Slowloris attacks by an absolute timeout boundary (30 seconds).
+
+1. The local Frontend calculates the **SHA-256 Hash** of all your code files modified by VSCode.
+2. The server sends a list of its own Hashes.
+3. The Frontend condenses only the "differences" into a hexadecimal super `Blob` block, injecting Size Prefixes (`Little Endian`) before each file.
+4. The Server (`server_conn_read`) sucks the bytes through the TCP Socket and unpacks the Stream directly onto the hard drive without allocating the entire string in RAM (avoiding *Out Of Memory* with large images and DLLs).
+
+### 6.2 Restart with System Signals (SIGUSR1 / SIGUSR2)
+After downloading all new codes, the API triggers a `kill(getppid(), SIGUSR1)`. The Master process (`ar-core`) receives the signal (Custom Unix User Signal), re-executes the Makefile compilation, and replaces the network process. The absolute downtime is typically between 120 and 350 milliseconds.
+
+---
+
+## 7. Build and Execution
+
+The project must be compiled in a Linux/POSIX environment equipped with `gcc`, `make`, `libssl-dev`, and `libpq-dev`.
+
+```bash
+# 1. Give execution permission to the build script
+chmod +x compile.sh
+
+# 2. Compile and run the orchestrator (requires root for port 80/443 binding)
+./compile.sh
+sudo ./core
+```
