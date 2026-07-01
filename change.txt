@@ -1,0 +1,14 @@
+v1.0 — Initial Release
+- HTTPS server with admin dashboard
+- PostgreSQL user management and audit logging
+- Real-time system monitoring
+- Hot-reload file sync
+- Zero-trust security model
+
+v1.1 — Security & Cleanup
+- Removed TTY system (deprecated)
+- Hardened domain security (subdomain whitelist)
+- Cleaned up console logging (suppressed noise)
+- Fixed system monitor table sorting
+- Added process owner, path, CPU% columns
+- Console logs decoupled from PostgreSQL audit

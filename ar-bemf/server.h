@@ -51,6 +51,7 @@ typedef struct {
     int query_count;           
     cJSON *json_doc;           
     int body_length_in_buffer; // Bytes do body já lidos no buffer inicial
+    char host[256];            // Host header (domínio) sem porta
     int admin_role;            // Cargo autenticado (Zero-Trust)
     char admin_user[64];       // Username autenticado
 } HttpRequest;
@@ -76,6 +77,7 @@ void server_add_header(ClientConnection *conn, const char *header_line);
 void server_redirect(ClientConnection *conn, const char *url);
 const char* server_get_client_ip(ClientConnection *conn);
 int  server_serve_file(ClientConnection *conn, const char *filepath, const char *content_type);
+void server_send_404(ClientConnection *conn);
 cJSON* parse_json_body(HttpRequest *req);
 void server_send_json(ClientConnection *conn, int status, cJSON *json_obj);
 

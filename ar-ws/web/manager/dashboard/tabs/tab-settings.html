@@ -3,20 +3,6 @@
         <h2 data-i18n="p_settings_h">SYSTEM: CONFIGURATIONS</h2>
     </div>
     <div class="panel-content">
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
-            <div>
-                <strong style="color: var(--text-main);" data-i18n="p_settings_tty_title">Global TTY Print</strong>
-                <p style="color: var(--text-muted); font-size: 0.9em; margin-top: 5px;" data-i18n="p_settings_tty_desc">
-                    Replicate all system logs and messages to physical /dev/tty1.</p>
-            </div>
-            <label class="switch">
-                <input type="checkbox" id="tty-toggle" onchange="toggleTTYConfig()">
-                <span class="slider round"></span>
-            </label>
-        </div>
-
-        <div style="border-top: 1px solid var(--border); margin: 20px 0;"></div>
-
         <div style="margin-bottom: 20px;">
             <strong style="color: var(--text-main);" data-i18n="p_settings_recompile_title">Manual System
                 Recompilation</strong>
@@ -34,59 +20,3 @@
         </div>
     </div>
 </div>
-
-<style>
-    .switch {
-        position: relative;
-        display: inline-block;
-        width: 50px;
-        height: 24px;
-    }
-
-    .switch input {
-        opacity: 0;
-        width: 0;
-        height: 0;
-    }
-
-    .slider {
-        position: absolute;
-        cursor: pointer;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: var(--bg-card);
-        transition: .4s;
-        border: 1px solid var(--border);
-    }
-
-    .slider:before {
-        position: absolute;
-        content: "";
-        height: 16px;
-        width: 16px;
-        left: 3px;
-        bottom: 3px;
-        background-color: var(--text-muted);
-        transition: .4s;
-    }
-
-    input:checked+.slider {
-        background-color: var(--success);
-        border-color: var(--success);
-    }
-
-    input:checked+.slider:before {
-        transform: translateX(26px);
-        background-color: #000;
-    }
-
-    .slider.round {
-        border-radius: 24px;
-    }
-
-    .slider.round:before {
-        border-radius: 50%;
-    }
-</style>

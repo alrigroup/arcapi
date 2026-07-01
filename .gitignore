@@ -1,25 +1,61 @@
-# Build artifacts
-*.o
+# --- Binaries ---
+arc_server
 core
-ar_server
-*.out
+*.o
+*.obj
 *.exe
+*.dll
+*.so
+*.dylib
 
-# Logs
+# --- Logs ---
 *.log
+arc_server.log
+db_error.log
 
-# Secrets & Environment
-.env
+# --- Database ---
+db.json
+db.json.bak
+
+# --- Certificates & Keys ---
+*.pem
+*.key
+*.crt
+*.csr
 cert.pem
 key.pem
 
-# Local configurations & DB cache
-db.json
-
-# OS generated files
+# --- OS ---
 .DS_Store
 Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+*~
 
-# IDEs and Editors
+# --- IDE ---
 .vscode/
 .idea/
+*.sublime-*
+.project
+.classpath
+
+# --- Build ---
+ar-ws/core/*.o
+ar-ws/routes/*.o
+ar-bemf/*.o
+shared/*.o
+
+# --- Temp ---
+tmp/
+temp/
+*.bak
+*.tmp
+
+# --- Config ---
+.passhash
+.env
+
+# --- Git ---
+*.orig
+*.patch

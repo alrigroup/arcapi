@@ -2,7 +2,6 @@
 #include "../core/user_manager.h"
 #include "../core/database.h"
 #include "../core/logs.h"
-#include "../core/settings.h"
 #include "../core/update.h"
 #include "../core/sync_engine.h"
 #include <string.h>
@@ -55,48 +54,7 @@ void api_config_get_handler(ClientConnection *conn, HttpRequest *req) {
     }
     
     cJSON *resp = cJSON_CreateObject();
-    cJSON_AddBoolToObject(resp, "tty_print", global_tty_print_enabled);
     server_send_json(conn, 200, resp);
-}
-
-void api_config_tty_handler(ClientConnection *conn, HttpRequest *req) {
-    int logged_in_role;
-    char logged_in_user[64] = {0};
-    if (!check_admin_auth(conn, req, &logged_in_role, logged_in_user)) return;
-    
-    if (logged_in_role > 0) { 
-        server_send_response(conn, 403, "application/json", "{\"error\": \"Forbidden: ROOT only.\"}"); 
-        return; 
-    }
-    
-    const char *confirm_pass = get_header(req, "X-Confirm-Pass");
-    if (!confirm_pass || !verify_sudo(logged_in_user, confirm_pass)) {
-        arc_log("WARN", "Failed sudo auth for TTY config by user '%s'", logged_in_user);
-        server_send_response(conn, 401, "application/json", "{\"error\": \"Senha sudo incorreta ou ausente.\"}");
-        return;
-    }
-
-    cJSON *json = parse_json_body(req);
-    if (json) {
-        cJSON *tty_print = cJSON_GetObjectItem(json, "tty_print");
-        if (tty_print && (tty_print->type == cJSON_True || tty_print->type == cJSON_False)) {
-            pthread_mutex_lock(&db_mutex);
-            if (global_db) {
-                cJSON *config = cJSON_GetObjectItem(global_db, "config");
-                if (!config) { config = cJSON_CreateObject(); cJSON_AddItemToObject(global_db, "config", config); }
-                int is_true = (tty_print->type == cJSON_True);
-                if (cJSON_GetObjectItem(config, "tty_print")) {
-                    cJSON_ReplaceItemInObject(config, "tty_print", cJSON_CreateBool(is_true));
-                } else {
-                    cJSON_AddBoolToObject(config, "tty_print", is_true);
-                }
-                global_tty_print_enabled = is_true;
-                sync_db_disk();
-            }
-            pthread_mutex_unlock(&db_mutex);
-            server_send_response(conn, 200, "application/json", "{\"message\": \"Configuration updated.\"}");
-        } else { server_send_response(conn, 400, "application/json", "{\"error\": \"Invalid payload.\"}"); }
-    } else { server_send_response(conn, 400, "application/json", "{\"error\": \"Invalid JSON.\"}"); }
 }
 
 void api_system_restart_handler(ClientConnection *conn, HttpRequest *req) {

@@ -2,7 +2,6 @@ const translations = {
     en: {
         lang_btn: "PT-BR",
         tab_analytics: "Analytics & Firewall",
-        tab_tty: "Terminal (TTY)",
         tab_logs: "Console Logs",
         tab_system_logs: "System Logs",
         tab_users: "Management",
@@ -19,11 +18,6 @@ const translations = {
         th_admin: "Admin",
         th_description: "Description",
         th_ip_origin: "IP Origin",
-        p_tty_h: "SERVER: TTY CONTROL",
-        ph_tty: "Message for terminal...",
-        btn_tty_send: "Send Secure Text",
-        btn_tty_logo: "Send Logo",
-        btn_tty_clear: "Clear Screen",
         p_logs_h: "SYSTEM: INTERNAL LOGS",
         p_admin_h: "SEC: ADMIN MANAGEMENT",
         p_admin_info: "Credentials are encrypted (Client-Side Hashing) before leaving the browser.",
@@ -48,8 +42,6 @@ const translations = {
         modal_create_title: "Create Administrator",
         modal_restart_title: "System Restart",
         p_settings_h: "SYSTEM: CONFIGURATIONS",
-        p_settings_tty_title: "Global TTY Print",
-        p_settings_tty_desc: "Replicate all system logs and messages to physical /dev/tty1.",
         p_settings_recompile_title: "Manual System Recompilation",
         p_settings_recompile_desc: "Force the system to rebuild and restart modules. Requires ROOT privileges and Sudo confirmation.",
         btn_recompile_api: "Recompile API",
@@ -58,7 +50,6 @@ const translations = {
     pt: {
         lang_btn: "EN-US",
         tab_analytics: "Análise e Firewall",
-        tab_tty: "Terminal (TTY)",
         tab_logs: "Logs do Console",
         tab_system_logs: "Logs do Sistema",
         tab_users: "Gerenciamento",
@@ -75,11 +66,6 @@ const translations = {
         th_admin: "Administrador",
         th_description: "Descrição",
         th_ip_origin: "IP de Origem",
-        p_tty_h: "SERVIDOR: CONTROLE TTY",
-        ph_tty: "Mensagem para o terminal...",
-        btn_tty_send: "Enviar Texto Seguro",
-        btn_tty_logo: "Enviar Logo",
-        btn_tty_clear: "Limpar Tela",
         p_logs_h: "SISTEMA: LOGS INTERNOS",
         p_admin_h: "SEC: GESTÃO DE ADMINISTRADORES",
         p_admin_info: "Credenciais são criptografadas (Client-Side Hashing) antes de deixar o navegador.",
@@ -104,8 +90,6 @@ const translations = {
         modal_create_title: "Criar Administrador",
         modal_restart_title: "Reinício do Sistema",
         p_settings_h: "SISTEMA: CONFIGURAÇÕES",
-        p_settings_tty_title: "Impressão Global no TTY",
-        p_settings_tty_desc: "Replica todos os logs e mensagens do sistema fisicamente no /dev/tty1.",
         p_settings_recompile_title: "Recompilação Manual do Sistema",
         p_settings_recompile_desc: "Força a reconstrução e o reinício dos módulos do sistema. Requer privilégios ROOT e confirmação Sudo.",
         btn_recompile_api: "Recompilar API",
@@ -193,15 +177,19 @@ let currentTab = 'tab-analytics';
 let metricsChartInstance = null;
 const errIndicator = document.getElementById('err-indicator');
 
+// Process sorting
+let procData = [];
+let procSort = { key: 'cpu', dir: 'desc' };
+
 function enforcePermissions() {
     const myRole = parseInt(sessionStorage.getItem('arc_admin_role') || '2');
 
     // Restrictions for ADMIN (1) and SUP (2)
     if (myRole > 0) {
-        const navTty = document.getElementById('nav-tty');
-        if (navTty) navTty.style.display = 'none';
         const navUpdate = document.getElementById('nav-update');
         if (navUpdate) navUpdate.style.display = 'none';
+        const navSystem = document.getElementById('nav-system');
+        if (navSystem) navSystem.style.display = 'none';
         const navAddUser = document.getElementById('nav-add-user');
         if (navAddUser) navAddUser.style.display = 'none';
         const navSettings = document.getElementById('nav-settings');
@@ -245,8 +233,6 @@ async function loadTabContent(tabId) {
                         }
                     });
                 }
-            } else if (tabId === 'tab-settings') {
-                loadConfig();
             }
             return true;
         } catch (e) {
@@ -409,48 +395,6 @@ function switchUserTab(tabId) {
     document.getElementById(tabId).style.display = 'block';
 }
 
-
-async function loadConfig() {
-    const data = await fetchAPI('/manager/api/config');
-    if (data) {
-        const toggle = document.getElementById('tty-toggle');
-        if (toggle) toggle.checked = data.tty_print;
-    }
-}
-
-async function toggleTTYConfig() {
-    const toggle = document.getElementById('tty-toggle');
-    if (!toggle) return;
-    const newState = toggle.checked;
-
-    const actionText = newState ? "enable" : "disable";
-    const bodyHtml = `<p>Are you sure you want to ${actionText} global TTY1 printing?</p><p style="color: var(--text-muted); font-size: 0.9em; margin-top: 5px;">Confirm your Sudo password to authorize.</p>`;
-
-    const result = await modalManager.open('modal_restart_title', bodyHtml);
-    if (!result) {
-        toggle.checked = !newState;
-        return;
-    }
-
-    try {
-        const res = await fetch('/manager/api/config/tty', {
-            method: 'POST', credentials: 'same-origin',
-            headers: { 'Content-Type': 'application/json', 'X-Confirm-Pass': result.confirm_pass },
-            body: JSON.stringify({ tty_print: newState })
-        });
-        if (!res.ok) {
-            const err = await res.json().catch(() => ({}));
-            if (res.status === 401 && (!err.error || !err.error.includes("password"))) {
-                logout(); return;
-            }
-            alert(`Failed to update configuration: ${err.error || 'HTTP ' + res.status}`);
-            toggle.checked = !newState;
-        }
-    } catch (err) {
-        alert("Communication with server failed.");
-        toggle.checked = !newState;
-    }
-}
 
 async function getFileHash(file) {
     const buffer = await file.arrayBuffer();
@@ -908,6 +852,184 @@ async function clearAuditLogs() {
     }
 }
 
+// ---- System Monitor charts ---- 
+
+let cpuChartInstance = null, ramChartInstance = null, diskChartInstance = null;
+const accentColor = () => getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#00ff41';
+
+function createDoughnutChart(canvasId, label, value, maxValue, color) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return null;
+    const ctx = canvas.getContext('2d');
+    const pct = maxValue > 0 ? (value / maxValue * 100) : 0;
+    return new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            datasets: [{
+                data: [pct, 100 - pct],
+                backgroundColor: [color, 'rgba(255,255,255,0.06)'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            cutout: '75%',
+            plugins: {
+                legend: { display: false },
+                tooltip: { enabled: false }
+            }
+        }
+    });
+}
+
+function updateDoughnutChart(chart, value, maxValue) {
+    if (!chart) return;
+    const pct = maxValue > 0 ? (value / maxValue * 100) : 0;
+    chart.data.datasets[0].data = [Math.min(pct, 100), Math.max(100 - pct, 0)];
+    chart.update();
+}
+
+async function fetchSystemInfo() {
+    const tab = document.getElementById('tab-system');
+    if (!tab || !tab.classList.contains('active')) return;
+
+    const header = document.getElementById('sys-panel-header');
+    const data = await fetchAPI('/manager/api/system/info');
+    if (!data) {
+        if (header && !header.dataset.loaded) {
+            header.innerHTML = '<span>SYSTEM: SERVER MONITOR</span><span style="font-size:0.75rem;color:var(--danger)">API Error</span>';
+        }
+        return;
+    }
+    if (!header) return;
+    header.dataset.loaded = '1';
+    header.innerHTML = '<span>SYSTEM: SERVER MONITOR</span><span style="font-size:0.75rem;color:var(--text-muted)" id="sys-hostname">' + sanitizeHTML(data.hostname || '-') + '</span>';
+
+    // Show debug errors if present
+    if (data._debug) {
+        console.warn('SystemMonitor debug:', data._debug);
+        let debugEl = document.getElementById('sys-debug');
+        if (!debugEl) {
+            debugEl = document.createElement('div');
+            debugEl.id = 'sys-debug';
+            debugEl.style.cssText = 'margin-top:8px;padding:8px;background:rgba(255,0,0,0.1);border:1px solid var(--danger);border-radius:6px;font-size:0.7rem;color:var(--danger);font-family:monospace;white-space:pre-wrap;word-break:break-all;';
+            const firstPanel = document.querySelector('#tab-system .panel');
+            if (firstPanel) firstPanel.after(debugEl);
+        }
+        debugEl.textContent = '⚠ ERRORS: ' + data._debug;
+    }
+
+    document.getElementById('sys-os').textContent = data.os || '-';
+    document.getElementById('sys-uptime').textContent = data.uptime ? formatUptime(data.uptime) : '-';
+
+    // CPU
+    if (data.cpu) {
+        const pct = data.cpu.usage_percent || 0;
+        document.getElementById('cpu-pct-text').textContent = Math.round(pct) + '%';
+        document.getElementById('cpu-cores').textContent = data.cpu.cores + ' cores';
+        document.getElementById('sys-load').textContent = (data.cpu.load_1m || 0).toFixed(2);
+        if (!cpuChartInstance) {
+            cpuChartInstance = createDoughnutChart('cpuChart', pct, 100, accentColor());
+        } else {
+            updateDoughnutChart(cpuChartInstance, pct, 100);
+        }
+    }
+
+    // Memory
+    if (data.memory) {
+        document.getElementById('ram-text').textContent = data.memory.used_mb + ' / ' + data.memory.total_mb + ' MB';
+        if (!ramChartInstance) {
+            ramChartInstance = createDoughnutChart('ramChart', data.memory.used_mb, data.memory.total_mb, accentColor());
+        } else {
+            updateDoughnutChart(ramChartInstance, data.memory.used_mb, data.memory.total_mb);
+        }
+    }
+
+    // Disk
+    if (data.disk && data.disk.length > 0) {
+        const d = data.disk[0];
+        const dt = document.getElementById('disk-text');
+        if (dt) dt.textContent = d.used_gb + ' / ' + d.total_gb + ' GB';
+        if (!diskChartInstance) {
+            diskChartInstance = createDoughnutChart('diskChart', d.used_gb, d.total_gb, accentColor());
+        } else {
+            updateDoughnutChart(diskChartInstance, d.used_gb, d.total_gb);
+        }
+    }
+
+    // Network
+    const netTbody = document.getElementById('net-tbody');
+    if (netTbody && data.network) {
+        netTbody.innerHTML = data.network.map(n => {
+            const rx = formatBytes(n.rx_bytes || 0);
+            const tx = formatBytes(n.tx_bytes || 0);
+            return `<tr><td style="padding:4px;">${sanitizeHTML(n.name)}</td><td style="padding:4px; text-align:right;">${rx}</td><td style="padding:4px; text-align:right;">${tx}</td></tr>`;
+        }).join('');
+    }
+
+    // Processes
+    const procTbody = document.getElementById('proc-tbody');
+    if (procTbody && data.processes) {
+        procData = data.processes;
+        renderProcs();
+    }
+    // Process count
+    const procCountEl = document.getElementById('proc-count');
+    if (procCountEl && data.processes) {
+        procCountEl.textContent = data.processes.length;
+    }
+}
+
+function formatUptime(secs) {
+    const d = Math.floor(secs / 86400);
+    const h = Math.floor((secs % 86400) / 3600);
+    const m = Math.floor((secs % 3600) / 60);
+    const s = Math.floor(secs % 60);
+    let str = '';
+    if (d > 0) str += d + 'd ';
+    str += h + 'h ' + m + 'm ' + s + 's';
+    return str;
+}
+
+function formatBytes(bytes) {
+    if (bytes >= 1099511627776) return (bytes / 1099511627776).toFixed(2) + ' TB';
+    if (bytes >= 1073741824) return (bytes / 1073741824).toFixed(2) + ' GB';
+    if (bytes >= 1048576) return (bytes / 1048576).toFixed(2) + ' MB';
+    if (bytes >= 1024) return (bytes / 1024).toFixed(2) + ' KB';
+    return bytes + ' B';
+}
+
+function renderProcs() {
+    const tbody = document.getElementById('proc-tbody');
+    if (!tbody) return;
+    const sorted = [...procData].sort((a, b) => {
+        let va = a[procSort.key], vb = b[procSort.key];
+        if (procSort.key === 'pid' || procSort.key === 'memory_kb' || procSort.key === 'cpu_percent') {
+            va = Number(va); vb = Number(vb);
+        } else {
+            va = String(va).toLowerCase(); vb = String(vb).toLowerCase();
+        }
+        if (va < vb) return procSort.dir === 'asc' ? -1 : 1;
+        if (va > vb) return procSort.dir === 'asc' ? 1 : -1;
+        return 0;
+    }).slice(0, 30);
+    tbody.innerHTML = sorted.map(p => {
+        const mem = p.memory_kb > 1024 ? (p.memory_kb / 1024).toFixed(1) + ' MB' : p.memory_kb + ' KB';
+        const sc = p.state === 'R' ? 'color:var(--success);' : (p.state === 'S' ? 'color:var(--text-muted);' : 'color:var(--warning);');
+        return '<tr><td style="padding:4px;">' + p.pid + '</td><td style="padding:4px;">' + sanitizeHTML(p.name) + '</td><td style="padding:4px;text-align:center;' + sc + '">' + sanitizeHTML(p.state) + '</td><td style="padding:4px;text-align:right;">' + (p.cpu_percent || 0).toFixed(1) + '</td><td style="padding:4px;text-align:right;">' + mem + '</td><td style="padding:4px;">' + sanitizeHTML(p.owner) + '</td><td style="padding:4px;font-size:0.7rem;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + sanitizeHTML(p.path) + '">' + sanitizeHTML(p.path) + '</td></tr>';
+    }).join('');
+}
+
+function sortProcs(key) {
+    if (procSort.key === key) procSort.dir = procSort.dir === 'asc' ? 'desc' : 'asc';
+    else { procSort.key = key; procSort.dir = key === 'pid' ? 'asc' : 'desc'; }
+    document.querySelectorAll('#tab-system th span[id^="sort-"]').forEach(s => s.textContent = '');
+    const el = document.getElementById('sort-' + key);
+    if (el) el.textContent = procSort.dir === 'asc' ? '▲' : '▼';
+    renderProcs();
+}
+
 async function validateSession() {
     try { const res = await fetch('/manager/api/metrics', { credentials: 'same-origin' }); if (res.status === 401) logout(); } catch (e) { }
 }
@@ -921,6 +1043,8 @@ function pollData() {
         else fetchLogs();
     } else if (currentTab === 'tab-users') {
         fetchAdmins();
+    } else if (currentTab === 'tab-system') {
+        fetchSystemInfo();
     }
 }
 

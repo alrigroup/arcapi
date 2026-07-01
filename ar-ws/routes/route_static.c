@@ -1,16 +1,22 @@
 #include "../routes.h"
+#include "../core/logs.h"
 #include <string.h>
 #include <stdio.h>
 
 void static_handler(ClientConnection *conn, HttpRequest *req) {
     char filepath[512];
+    char clean_path[512];
+    
+    // Remove query string (?v=2 etc) do path
+    strncpy(clean_path, req->path, sizeof(clean_path) - 1);
+    char *q = strchr(clean_path, '?');
+    if (q) *q = '\0';
     
     // Constrói o caminho relativo à pasta web
-    // req->path começa com '/', então concatenamos ar-ws/web + req->path
-    snprintf(filepath, sizeof(filepath), "ar-ws/web%s", req->path);
+    snprintf(filepath, sizeof(filepath), "ar-ws/web%s", clean_path);
     
     // Determina o Content-Type baseado na extensão
-    const char *ext = strrchr(req->path, '.');
+    const char *ext = strrchr(clean_path, '.');
     const char *content_type = "text/plain";
     
     if (ext) {
@@ -25,9 +31,10 @@ void static_handler(ClientConnection *conn, HttpRequest *req) {
         else if (strcasecmp(ext, ".json") == 0) content_type = "application/json";
     }
 
-    // Tenta servir o arquivo. Se não existir, retorna 404.
+    // Tenta servir o arquivo. Se não existir, retorna 404 com página estilizada.
     if (!server_serve_file(conn, filepath, content_type)) {
-        // Se for uma requisição de diretório ou arquivo inexistente
-        server_send_response(conn, 404, "text/plain", "Asset Not Found");
+        const char *host = req->host[0] ? req->host : "(sem host)";
+        arc_log("ARC-DENIED", "Acesso negado | IP=%s URL:%s | Path=%s", server_get_client_ip(conn), host, clean_path);
+        server_send_404(conn);
     }
 }

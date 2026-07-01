@@ -1,0 +1,28 @@
+AR-CWB — Commit Details
+========================
+
+## Changes
+
+### TTY System Removed
+- Deleted route_api_tty.c (TTY text/clear/logo handlers)
+- Deleted settings.h and settings.c (only contained global_tty_print_enabled)
+- Stripped /dev/tty1 write from tty.c (alri_print now pure printf)
+- Removed tty_direct_write() and clear_tty()
+- Removed TTY frontend tab, nav button, and settings toggle
+- Removed duplicated TTY dead code from ar-bemf/api.c
+
+### Domain Security Hardened
+- Removed subdomain wildcard match from router.c domain_matches()
+- Only exact alrigroup.com and www.alrigroup.com are accepted
+- Arbitrary subdomains (e.g., alriserver.alrigroup.com) now return 404
+
+### Console Logging Cleanup
+- MAP level (indexed file messages) suppressed from console output
+- SystemMonitor per-request log line removed
+- db_log_event() call removed from arc_log() — console logs no longer go to PostgreSQL audit_logs table
+- Database init messages changed from direct alri_print to arc_log
+
+### Frontend
+- Tab-system: fixed column alignment (CPU%, RAM, Owner, Path)
+- Added click-to-sort on Owner and Path columns
+- Renamed RSS column header to RAM

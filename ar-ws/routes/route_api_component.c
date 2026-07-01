@@ -37,7 +37,7 @@ void api_component_handler(ClientConnection *conn, HttpRequest *req) {
         return;
     }
 
-    if (strcmp(component, "tab-tty") == 0 || strcmp(component, "tab-update") == 0) {
+    if (strcmp(component, "tab-tty") == 0 || strcmp(component, "tab-update") == 0 || strcmp(component, "tab-system") == 0) {
         if (logged_in_role > 0) { server_send_response(conn, 403, "application/json", "{\"error\": \"Forbidden\"}"); return; }
     } else if (strcmp(component, "tab-users") == 0) {
         if (logged_in_role > 1) { server_send_response(conn, 403, "application/json", "{\"error\": \"Forbidden\"}"); return; }

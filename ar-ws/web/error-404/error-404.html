@@ -1,29 +1,59 @@
-<!-- web/error/404.html -->
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 
 <head>
     <meta charset="UTF-8">
-    <title>404 - Page Not Found</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Página não encontrada | ALRI GROUP</title>
+    <link rel="stylesheet" href="/home/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            font-family: sans-serif;
-            text-align: center;
-            padding: 50px;
+        #hero {
+            min-height: 70vh;
         }
 
-        h1 {
-            color: #ff4444;
+        .hero-content h1 {
+            font-size: clamp(2.5rem, 5vw, 4.5rem);
         }
     </style>
 </head>
 
 <body>
-    <h1>Error 404</h1>
-    <p>The page you are looking for does not exist.</p>
-    <a href="/home">Return to Home</a>
-    <br> </br>
-    <footer> Copyright © 2022-2026 ALRI GROUP</footer>
+    <nav class="navbar">
+        <div class="logo">ALRI<span>GROUP</span></div>
+    </nav>
+
+    <main>
+        <section id="hero">
+            <div class="bg-grid"></div>
+            <div class="glow-orb"></div>
+            <div class="hero-content fade-in visible">
+                <img src="https://i.ibb.co/Fk4sSC7X/ALRI-SF-W.png" width="250" alt="ALRI Group Logo"
+                    style="margin-bottom: 2rem; filter: drop-shadow(0 0 10px rgba(255,255,255,0.1));">
+                <h1> <span class="text-gradient">404</span> </h1>
+                <p>O recurso que você está procurando não existe ou foi movido para outro endereço.</p>
+                <a href="/" class="cta-button">Voltar ao Início</a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-socials">
+            <a href="https://www.instagram.com/alrigroup" target="_blank" title="Instagram">
+                <i class="fab fa-instagram"></i>
+            </a>
+            <a href="https://dsc.gg/alrigroup" target="_blank" title="Discord">
+                <i class="fab fa-discord"></i>
+            </a>
+            <a href="https://github.com/alrigroup" target="_blank" title="GitHub">
+                <i class="fab fa-github"></i>
+            </a>
+        </div>
+        <p class="footer-quote">"Building the future, one line of code at a time."</p>
+        <p class="footer-copy">&copy; 2020-2026 ALRI GROUP. All rights reserved.</p>
+    </footer>
+
+    <script src="/home/script.js"></script>
 </body>
 
 </html>

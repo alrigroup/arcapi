@@ -246,8 +246,8 @@ void program() {
 
 int main() {
     // Validate sudo at the start
-    if (system("sudo -v") != 0) {
-        core_print(RED " ✖ [ERROR]" RESET WHITE " This program needs to be executed as superuser (sudo)." RESET "\n");
+    if (geteuid() != 0) {
+        core_print(RED " ✖ [ERROR]" RESET WHITE " This program needs to be executed as superuser (root)." RESET "\n");
         exit(1);
     }
 

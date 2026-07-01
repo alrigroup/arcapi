@@ -28,17 +28,14 @@ void api_admin_update_handler(ClientConnection *conn, HttpRequest *req);
 
 // Route handlers - System
 void api_config_get_handler(ClientConnection *conn, HttpRequest *req);
-void api_config_tty_handler(ClientConnection *conn, HttpRequest *req);
 void api_system_restart_handler(ClientConnection *conn, HttpRequest *req);
+void api_system_info_handler(ClientConnection *conn, HttpRequest *req);
 void api_hashes_handler(ClientConnection *conn, HttpRequest *req);
 void api_upload_handler(ClientConnection *conn, HttpRequest *req);
 void api_delete_handler(ClientConnection *conn, HttpRequest *req);
 void api_sync_batch_handler(ClientConnection *conn, HttpRequest *req);
 
 void api_data_handler(ClientConnection *conn, HttpRequest *req);
-void tty_text_handler(ClientConnection *conn, HttpRequest *req);
-void tty_clear_handler(ClientConnection *conn, HttpRequest *req);
-void tty_logo_handler(ClientConnection *conn, HttpRequest *req);
 
 // Utility
 void sendpage(ClientConnection *conn, const char *folder_name);

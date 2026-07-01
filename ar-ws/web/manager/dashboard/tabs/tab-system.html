@@ -1,0 +1,55 @@
+<div class="panel">
+    <div class="panel-header" id="sys-panel-header">
+        <span>SYSTEM: SERVER MONITOR</span>
+        <span style="font-size:0.75rem;color:var(--text-muted)" id="sys-hostname">-</span>
+    </div>
+    <div class="panel-content">
+        <div id="sys-info-row" style="display:flex;gap:15px;flex-wrap:wrap;padding:0 0 12px 0;">
+            <div><span style="color:var(--text-muted);font-size:0.7rem;">OS</span><br><span id="sys-os" style="font-weight:600;">-</span></div>
+            <div><span style="color:var(--text-muted);font-size:0.7rem;">UPTIME</span><br><span id="sys-uptime" style="font-weight:600;">-</span></div>
+            <div><span style="color:var(--text-muted);font-size:0.7rem;">LOAD</span><br><span id="sys-load" style="font-weight:600;">-</span></div>
+        </div>
+
+        <div style="display:flex;gap:15px;flex-wrap:wrap;margin-bottom:15px;">
+            <div style="flex:1;min-width:180px;text-align:center;padding:10px;border:1px solid var(--border-color);border-radius:8px;">
+                <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:5px;">CPU <span id="cpu-cores" style="color:var(--text-muted)"></span></div>
+                <canvas id="cpuChart" width="160" height="160" style="max-width:140px;max-height:140px;margin:0 auto;"></canvas>
+                <div style="margin-top:8px;font-size:0.8rem;"><span id="cpu-pct-text">0%</span></div>
+            </div>
+            <div style="flex:1;min-width:180px;text-align:center;padding:10px;border:1px solid var(--border-color);border-radius:8px;">
+                <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:5px;">RAM</div>
+                <canvas id="ramChart" width="160" height="160" style="max-width:140px;max-height:140px;margin:0 auto;"></canvas>
+                <div style="margin-top:8px;font-size:0.8rem;"><span id="ram-text">0 / 0 MB</span></div>
+            </div>
+            <div style="flex:1;min-width:180px;text-align:center;padding:10px;border:1px solid var(--border-color);border-radius:8px;">
+                <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:5px;">DISK</div>
+                <canvas id="diskChart" width="160" height="160" style="max-width:140px;max-height:140px;margin:0 auto;"></canvas>
+                <div style="margin-top:8px;font-size:0.8rem;"><span id="disk-text">0 / 0 GB</span></div>
+            </div>
+        </div>
+
+        <div style="margin-bottom:12px;">
+            <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:4px;">NETWORK</div>
+            <table>
+                <thead><tr><th>Interface</th><th style="text-align:right">RX</th><th style="text-align:right">TX</th></tr></thead>
+                <tbody id="net-tbody"></tbody>
+            </table>
+        </div>
+
+        <div>
+            <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:4px;">PROCESSES (top 30) <span style="font-size:0.65rem;color:var(--text-muted)">— click headers to sort</span></div>
+            <table>
+                <thead><tr>
+                    <th style="cursor:pointer;" onclick="sortProcs('pid')">PID <span id="sort-pid" style="font-size:0.6rem;">▲</span></th>
+                    <th style="cursor:pointer;" onclick="sortProcs('name')">Name</th>
+                    <th style="text-align:center;cursor:pointer;" onclick="sortProcs('state')">State</th>
+                    <th style="text-align:right;cursor:pointer;" onclick="sortProcs('cpu_percent')">CPU% <span id="sort-cpu_percent" style="font-size:0.6rem;"></span></th>
+                    <th style="text-align:right;cursor:pointer;" onclick="sortProcs('memory_kb')">RAM <span id="sort-memory_kb" style="font-size:0.6rem;"></span></th>
+                    <th style="cursor:pointer;" onclick="sortProcs('owner')">Owner <span id="sort-owner" style="font-size:0.6rem;"></span></th>
+                    <th style="cursor:pointer;" onclick="sortProcs('path')">Path <span id="sort-path" style="font-size:0.6rem;"></span></th>
+                </tr></thead>
+                <tbody id="proc-tbody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>

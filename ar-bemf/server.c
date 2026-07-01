@@ -167,7 +167,7 @@ static void arc_log(const char *level, const char *format, ...) {
     if (strcmp(level, "INFO") == 0) alri_print(CYAN"[ARC-INFO]"RESET" %s\n", buffer);
     else if (strcmp(level, "WARN") == 0) alri_print(YELLOW"[ARC-WARN]"RESET" %s\n", buffer);
     else if (strcmp(level, "ERROR") == 0) alri_print(RED"[ARC-ERROR]"RESET" %s\n", buffer);
-    else if (strcmp(level, "MAP") == 0) alri_print(PURPLE"[ARC-MAP]"RESET" %s\n", buffer);
+    else if (strcmp(level, "MAP") == 0) { /* suppress indexed file spam */ }
     else alri_print(GREEN"[ARC]"RESET" %s\n", buffer);
 
     pthread_mutex_lock(&log_mutex);
@@ -252,6 +252,12 @@ static int is_path_allowed(const char *path) {
     // Prevenção robusta: bloqueia null bytes diretos, ".." e evita
     // bypass de double URL encoding bloqueando o '%' após o decode.
     if (strstr(path, "..") != NULL || strchr(path, '%') != NULL || strstr(path, "%00") != NULL) {
+        return 0;
+    }
+
+    // Rejeita diretórios para evitar fopen em pastas (retorna Content-Length corrupto)
+    struct stat st;
+    if (stat(path, &st) == 0 && S_ISDIR(st.st_mode)) {
         return 0;
     }
 
@@ -368,9 +374,30 @@ void server_redirect(ClientConnection *conn, const char *url) {
     server_conn_write(conn, headers, strlen(headers));
 }
 
+void server_send_404(ClientConnection *conn) {
+    FILE *f = fopen("ar-ws/web/error-404/error-404.html", "rb");
+    if (!f) {
+        server_send_response(conn, 404, "text/html", "<h1>404</h1>");
+        return;
+    }
+    fseek(f, 0, SEEK_END);
+    long len = ftell(f);
+    fseek(f, 0, SEEK_SET);
+    char *html = malloc(len + 1);
+    if (!html) {
+        fclose(f);
+        server_send_response(conn, 404, "text/html", "<h1>404</h1>");
+        return;
+    }
+    fread(html, 1, len, f);
+    html[len] = '\0';
+    fclose(f);
+    server_send_response(conn, 404, "text/html", html);
+    free(html);
+}
+
 int server_serve_file(ClientConnection *conn, const char *filepath, const char *content_type) {
     if (!is_path_allowed(filepath)) {
-        arc_log("ERROR", "Access denied (Path Traversal): %s", filepath);
         track_access(conn->client_ip, conn->current_path, 403, conn->anon_id);
         return 0; 
     }
@@ -721,6 +748,24 @@ static void handle_client(ClientConnection *conn) {
         }
     }
     
+    // Extrai o Host header (domínio) sem a porta, trailing dot ou espaços
+    req.host[0] = '\0';
+    const char *host_header = get_header(&req, "Host");
+    if (host_header) {
+        const char *start = host_header;
+        while (*start == ' ') start++;
+        const char *end = start;
+        while (*end && *end != ':') end++;
+        int len = end - start;
+        if (len > 255) len = 255;
+        strncpy(req.host, start, len);
+        req.host[len] = '\0';
+        // Remove trailing dot (FQDN como "alrigroup.com.")
+        while (len > 0 && req.host[len - 1] == '.') {
+            req.host[--len] = '\0';
+        }
+    }
+
     // [FIX 1.2] Evita Evasão do IP-Binding em Servidores via Reverse Proxy
     const char *xff = get_header(&req, "X-Forwarded-For");
     if (!xff) xff = get_header(&req, "X-Real-IP");

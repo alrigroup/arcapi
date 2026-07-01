@@ -292,9 +292,6 @@
                 <li><button id="nav-analytics" class="tab-btn active" onclick="switchTab('tab-analytics', this)"
                         data-i18n="tab_analytics">Analytics &
                         Firewall</button></li>
-                <li><button id="nav-tty" class="tab-btn" onclick="switchTab('tab-tty', this)"
-                        data-i18n="tab_tty">Terminal
-                        (TTY)</button></li>
                 <li><button id="nav-logs" class="tab-btn" onclick="switchTab('tab-logs', this)"
                         data-i18n="tab_logs">System
                         Logs</button></li>
@@ -304,6 +301,8 @@
                         data-i18n="tab_settings">Settings</button></li>
                 <li><button id="nav-update" class="tab-btn" onclick="switchTab('tab-update', this)"
                         data-i18n="tab_update">Updates</button></li>
+                <li><button id="nav-system" class="tab-btn" onclick="switchTab('tab-system', this)"
+                        style="border-top:1px solid rgba(255,255,255,0.06); margin-top:8px; padding-top:12px;">System Monitor</button></li>
             </ul>
             <div class="sidebar-footer">
                 <span id="err-indicator" class="network-error">⚠ Connection Error</span>
@@ -346,16 +345,16 @@
 
             <!-- ABA 1: Analytics & Firewall -->
             <section id="tab-analytics" class="tab-content active"></section>
-            <!-- ABA 2: Terminal TTY -->
-            <section id="tab-tty" class="tab-content"></section>
-            <!-- ABA 3: System Logss -->
+            <!-- ABA 2: Logs -->
             <section id="tab-logs" class="tab-content"></section>
-            <!-- ABA 4: Gerenciamento de Usuários -->
+            <!-- ABA 3: Users -->
             <section id="tab-users" class="tab-content"></section>
-            <!-- ABA 5: Configurações -->
+            <!-- ABA 4: Settings -->
             <section id="tab-settings" class="tab-content"></section>
-            <!-- ABA 6: Atualizações e Hot-Reload -->
+            <!-- ABA 5: Updates -->
             <section id="tab-update" class="tab-content"></section>
+            <!-- ABA 6: System Monitor -->
+            <section id="tab-system" class="tab-content"></section>
         </main>
     </div>
 
