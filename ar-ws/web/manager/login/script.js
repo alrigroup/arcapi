@@ -6,7 +6,7 @@ const translations = {
         ph_user: "Administrator ID",
         ph_pass: "Secure Password",
         btn_login: "ACCESS SYSTEM",
-        security_notice: "E2EE Client-Side Hashing Enabled",
+        security_notice: "Secure Connection (HTTPS)",
         err_fill: "Please fill in all fields.",
         err_network: "Connection to server failed.",
         msg_wait: "Authenticating..."
@@ -18,7 +18,7 @@ const translations = {
         ph_user: "ID do Administrador",
         ph_pass: "Senha Segura",
         btn_login: "ACESSAR SISTEMA",
-        security_notice: "Hashing E2EE no Cliente Ativado",
+        security_notice: "Conexão Segura (HTTPS)",
         err_fill: "Por favor, preencha todos os campos.",
         err_network: "Falha de conexão com o servidor.",
         msg_wait: "Autenticando..."

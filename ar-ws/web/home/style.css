@@ -57,6 +57,23 @@ body {
     -webkit-backdrop-filter: blur(12px);
 }
 
+.nav-links {
+    display: flex;
+    gap: 2rem;
+}
+
+.nav-links a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.85rem;
+    transition: color 0.3s ease;
+    letter-spacing: 1px;
+}
+
+.nav-links a:hover {
+    color: var(--neon-red);
+}
+
 .lang-switcher button {
     background: transparent;
     border: 1px solid var(--border);
@@ -82,6 +99,254 @@ body {
 .logo span {
     color: var(--text-muted);
     font-weight: 400;
+}
+
+/* Hero CTAs */
+.hero-ctas {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.cta-outline {
+    background: transparent;
+    border-color: var(--text-muted);
+    color: var(--text-muted);
+}
+
+.cta-outline:hover {
+    border-color: var(--text-main);
+    color: var(--text-main);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+}
+
+/* About Highlight */
+.about-highlight {
+    margin-top: 2rem;
+    padding: 1.5rem 2rem;
+    border-left: 3px solid var(--neon-red);
+    background: rgba(255, 0, 60, 0.03);
+    font-style: italic;
+    font-size: 1.05rem;
+    color: var(--text-main);
+}
+
+/* Showcase / About */
+.showcase {
+    max-width: 850px;
+    margin: 0 auto;
+}
+
+.showcase-text p {
+    margin-bottom: 1.2rem;
+    color: var(--text-main);
+    font-size: 1.05rem;
+    line-height: 1.7;
+}
+
+.tech-list {
+    list-style: none;
+    margin: 1.5rem 0;
+}
+
+.tech-list li {
+    margin-bottom: 0.8rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.tech-list li i {
+    margin-right: 6px;
+    color: var(--neon-red);
+}
+
+/* Section Subtitle */
+.section-sub {
+    text-align: center;
+    color: var(--text-muted);
+    margin-bottom: 3rem;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Portfolio Blocks */
+.portfolio-block {
+    margin-bottom: 3.5rem;
+}
+
+.block-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.block-header h3 {
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+
+.block-icon {
+    font-size: 1.5rem;
+    color: var(--neon-red);
+}
+
+.badge-pilar {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-family: var(--font-mono);
+    background: rgba(0, 136, 255, 0.15);
+    color: var(--neon-blue);
+    padding: 2px 10px;
+    margin-left: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    vertical-align: middle;
+}
+
+.badge-expansao {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-family: var(--font-mono);
+    background: rgba(255, 0, 60, 0.15);
+    color: var(--neon-red);
+    padding: 2px 10px;
+    margin-left: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    vertical-align: middle;
+}
+
+/* Brand Grid + Cards */
+.brand-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.brand-card {
+    background: var(--surface);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 2rem;
+    border: 1px solid var(--border);
+    border-top: 1px solid rgba(0, 162, 255, 0.5);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    transform-style: preserve-3d;
+    will-change: transform;
+}
+
+.brand-card:hover {
+    box-shadow: 0 15px 40px rgba(0, 162, 255, 0.15);
+    border-top-color: var(--neon-blue);
+}
+
+.brand-card-wide {
+    grid-column: 1 / -1;
+}
+
+.brand-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 0.8rem;
+}
+
+.brand-card-header i {
+    font-size: 1.8rem;
+    color: var(--neon-red);
+}
+
+.brand-card-header h4 {
+    font-size: 1.4rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.brand-sub {
+    font-size: 0.8rem;
+    font-family: var(--font-mono);
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+}
+
+.brand-card p {
+    color: var(--text-main);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.brand-link {
+    display: inline-block;
+    margin-top: 1rem;
+    color: var(--neon-blue);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-family: var(--font-mono);
+    transition: color 0.3s ease;
+}
+
+.brand-link:hover {
+    color: var(--text-main);
+}
+
+/* Future Vision */
+.future-vision {
+    margin-top: 2rem;
+    padding: 3rem;
+    background: rgba(255, 0, 60, 0.02);
+    border: 1px solid rgba(255, 0, 60, 0.15);
+    text-align: center;
+}
+
+.future-content {
+    max-width: 650px;
+    margin: 0 auto;
+}
+
+.future-icon {
+    font-size: 2.5rem;
+    color: var(--neon-red);
+    margin-bottom: 1rem;
+}
+
+.future-content h3 {
+    font-size: 1.4rem;
+    margin-bottom: 0.8rem;
+    letter-spacing: 1px;
+}
+
+.future-content p {
+    color: var(--text-muted);
+    font-size: 1rem;
+    line-height: 1.7;
+}
+
+/* Project Icon Wrapper */
+.project-icon-wrapper {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 0, 60, 0.05);
+    border: 1px solid rgba(255, 0, 60, 0.15);
+    flex-shrink: 0;
+}
+
+.project-icon-wrapper i {
+    font-size: 1.8rem;
+    color: var(--neon-red);
+}
+
+/* Remove tilt from old .card selector (now .brand-card) */
+.card {
+    /* Keep legacy styles but JS now targets .brand-card */
 }
 
 /* Main Sections */
@@ -436,6 +701,303 @@ footer {
 #easter-egg:hover {
     opacity: 1;
     cursor: pointer;
+}
+
+/* ============================================
+   MOBILE RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+
+    /* Navbar — compacta */
+    .navbar {
+        padding: 0.8rem 4%;
+        gap: 0.5rem;
+    }
+
+    .logo {
+        font-size: 1rem;
+    }
+
+    .nav-links {
+        gap: 0.4rem;
+    }
+
+    .nav-links a {
+        font-size: 0.65rem;
+        padding: 0.3rem 0.4rem;
+        letter-spacing: 0.5px;
+    }
+
+    .lang-switcher button {
+        padding: 5px 8px;
+        font-size: 0.65rem;
+    }
+
+    /* Hero */
+    #hero {
+        min-height: 70vh;
+        padding-bottom: 5rem;
+    }
+
+    #hero h1 {
+        font-size: clamp(1.6rem, 6vw, 2.2rem);
+    }
+
+    #hero p {
+        font-size: clamp(0.85rem, 2.5vw, 1rem);
+        max-width: 90%;
+    }
+
+    .hero-content img {
+        width: 160px;
+    }
+
+    .cta-button {
+        padding: 0.9rem 1.5rem;
+        font-size: 0.75rem;
+    }
+
+    .cta-button::after {
+        display: none;
+    }
+
+    /* Sections */
+    main {
+        padding: 0 4%;
+    }
+
+    section {
+        padding: 4vh 0;
+    }
+
+    h2 {
+        font-size: 1.4rem;
+        margin-bottom: 2rem;
+    }
+
+    .section-sub {
+        font-size: 0.85rem;
+        margin-bottom: 2rem;
+    }
+
+    /* About */
+    .showcase-text p {
+        font-size: 0.95rem;
+    }
+
+    .about-highlight {
+        padding: 1rem 1.2rem;
+        font-size: 0.95rem;
+    }
+
+    /* Portfolio */
+    .portfolio-block {
+        margin-bottom: 2.5rem;
+    }
+
+    .block-header {
+        gap: 0.6rem;
+    }
+
+    .block-header h3 {
+        font-size: 1rem;
+        line-height: 1.4;
+    }
+
+    .block-icon {
+        font-size: 1.2rem;
+    }
+
+    .badge-pilar,
+    .badge-expansao {
+        font-size: 0.55rem;
+        padding: 1px 7px;
+        margin-left: 4px;
+    }
+
+    .brand-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .brand-card {
+        padding: 1.2rem;
+    }
+
+    .brand-card-header i {
+        font-size: 1.4rem;
+    }
+
+    .brand-card-header h4 {
+        font-size: 1.1rem;
+    }
+
+    .brand-sub {
+        font-size: 0.7rem;
+    }
+
+    .brand-card p {
+        font-size: 0.85rem;
+    }
+
+    /* Future Vision */
+    .future-vision {
+        padding: 2rem 1.2rem;
+    }
+
+    .future-icon {
+        font-size: 1.8rem;
+    }
+
+    .future-content h3 {
+        font-size: 1.1rem;
+    }
+
+    .future-content p {
+        font-size: 0.85rem;
+    }
+
+    /* Projects */
+    .project-showcase {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .project-card {
+        padding: 1.5rem;
+    }
+
+    .project-header {
+        gap: 1rem;
+    }
+
+    .project-icon-wrapper {
+        width: 48px;
+        height: 48px;
+    }
+
+    .project-icon-wrapper i {
+        font-size: 1.4rem;
+    }
+
+    .project-footer {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    /* Licensing */
+    .license-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .license-item {
+        padding: 1.5rem;
+    }
+
+    .license-item h4 {
+        font-size: 1rem;
+    }
+
+    .license-item p {
+        font-size: 0.8rem;
+    }
+
+    /* Tech List */
+    .tech-list li {
+        font-size: 0.8rem;
+    }
+
+    /* Footer */
+    footer {
+        padding: 2rem 4%;
+    }
+
+    .footer-socials {
+        gap: 1.5rem;
+    }
+
+    .footer-socials a {
+        font-size: 1.3rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .navbar {
+        padding: 0.6rem 4%;
+    }
+
+    .logo {
+        font-size: 0.85rem;
+    }
+
+    .nav-links {
+        gap: 0.2rem;
+    }
+
+    .nav-links a {
+        font-size: 0.55rem;
+        padding: 0.2rem 0.3rem;
+    }
+
+    .lang-switcher button {
+        padding: 3px 6px;
+        font-size: 0.55rem;
+    }
+
+    #hero {
+        min-height: 55vh;
+    }
+
+    #hero h1 {
+        font-size: clamp(1.2rem, 5vw, 1.4rem);
+    }
+
+    #hero p {
+        font-size: clamp(0.75rem, 2.5vw, 0.85rem);
+    }
+
+    .hero-content img {
+        width: 110px;
+        margin-bottom: 1.2rem !important;
+    }
+
+    .hero-ctas {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.6rem;
+    }
+
+    .cta-button {
+        padding: 0.6rem 1rem;
+        font-size: 0.6rem;
+        width: 100%;
+        max-width: 240px;
+    }
+
+    section {
+        padding: 2.5vh 0;
+    }
+
+    h2 {
+        font-size: 1.1rem;
+        margin-bottom: 1.2rem;
+    }
+
+    .brand-card {
+        padding: 1rem;
+    }
+
+    .project-card {
+        padding: 1.2rem;
+    }
+
+    .future-vision {
+        padding: 1.5rem 1rem;
+    }
 }
 
 /* Animations Fade In */

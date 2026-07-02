@@ -26,6 +26,49 @@ static void arc_log(const char *level, const char *format, ...);
 
 #define WEB_BASE_PATH "ar-ws/web"
 
+// Portable path canonicalization: resolves ".." and "." components in-place
+static void canonicalize_path(char *dst, size_t dst_size, const char *src) {
+    char stack[512][256];
+    int top = 0;
+    char tmp[512];
+    strncpy(tmp, src, sizeof(tmp) - 1);
+    tmp[sizeof(tmp) - 1] = '\0';
+#ifdef _WIN32
+    for (char *p = tmp; *p; p++) if (*p == '\\') *p = '/';
+#endif
+    char *token = strtok(tmp, "/");
+    while (token && top < 512) {
+        if (strcmp(token, "..") == 0) {
+            if (top > 0) top--;
+        } else if (strcmp(token, ".") != 0 && strcmp(token, "") != 0) {
+            strncpy(stack[top], token, sizeof(stack[top]) - 1);
+            stack[top][sizeof(stack[top]) - 1] = '\0';
+            top++;
+        }
+        token = strtok(NULL, "/");
+    }
+    dst[0] = '\0';
+    size_t pos = 0;
+    for (int i = 0; i < top && pos < dst_size - 2; i++) {
+        if (i > 0 || src[0] == '/') {
+            size_t remaining = dst_size - pos;
+            if (remaining > 1) {
+                dst[pos] = '/'; pos++;
+            }
+        }
+        size_t remaining = dst_size - pos;
+        if (remaining > 1 && pos + strlen(stack[i]) < dst_size - 1) {
+            strncpy(dst + pos, stack[i], remaining - 1);
+            pos += strlen(stack[i]);
+        }
+    }
+    if (pos == 0 && dst_size > 1) {
+        dst[0] = '.'; dst[1] = '\0';
+    } else {
+        dst[pos] = '\0';
+    }
+}
+
 // ------------------------------------------------------------------
 // Framework Print Utilities
 // ------------------------------------------------------------------
@@ -249,11 +292,18 @@ static void add_allowed_path(const char *path) {
 }
 
 static int is_path_allowed(const char *path) {
-    // Prevenção robusta: bloqueia null bytes diretos, ".." e evita
-    // bypass de double URL encoding bloqueando o '%' após o decode.
-    if (strstr(path, "..") != NULL || strchr(path, '%') != NULL || strstr(path, "%00") != NULL) {
+    // Bloqueia caracteres perigosos no path
+
+#ifdef _WIN32
+    if (strstr(path, "..") != NULL || strchr(path, '%') != NULL ||
+        strchr(path, '\\') != NULL || strchr(path, ':') != NULL) {
         return 0;
     }
+#else
+    if (strstr(path, "..") != NULL || strchr(path, '%') != NULL) {
+        return 0;
+    }
+#endif
 
     // Rejeita diretórios para evitar fopen em pastas (retorna Content-Length corrupto)
     struct stat st;
@@ -261,13 +311,22 @@ static int is_path_allowed(const char *path) {
         return 0;
     }
 
+    // Whitelist de paths pré-escaneados (mais seguro)
     AllowedPath *curr = allowed_paths;
     while (curr) {
         if (strcmp(curr->path, path) == 0) return 1;
         curr = curr->next;
     }
-    
-    if (strncmp(path, WEB_BASE_PATH, strlen(WEB_BASE_PATH)) == 0) {
+
+    // Fallback: resolve canonicalmente e verifica prefixo
+    char canon[512];
+    char base_canon[512];
+    canonicalize_path(canon, sizeof(canon), path);
+    canonicalize_path(base_canon, sizeof(base_canon), WEB_BASE_PATH);
+
+    size_t base_len = strlen(base_canon);
+    if (strncmp(canon, base_canon, base_len) == 0 &&
+        (canon[base_len] == '/' || canon[base_len] == '\0')) {
         return 1;
     }
 
@@ -353,16 +412,37 @@ void server_send_response(ClientConnection *conn, int status, const char *conten
 
 void server_add_header(ClientConnection *conn, const char *header_line) {
     if (!conn || !header_line) return;
+    // Sanitiza CRLF para prevenir HTTP Response Splitting
+    char sanitized[1024];
+    int si = 0;
+    for (int i = 0; header_line[i] != '\0' && si < (int)sizeof(sanitized) - 2; i++) {
+        if (header_line[i] != '\r' && header_line[i] != '\n') {
+            sanitized[si++] = header_line[i];
+        }
+    }
+    sanitized[si] = '\0';
+
     int current_len = strlen(conn->response_headers);
-    int line_len = strlen(header_line);
+    int line_len = strlen(sanitized);
     
-    if (current_len + line_len < sizeof(conn->response_headers) - 1) {
-        strcat(conn->response_headers, header_line);
+    if (current_len + line_len + 2 < sizeof(conn->response_headers) - 1) {
+        strcat(conn->response_headers, sanitized);
+        strcat(conn->response_headers, "\r\n");
     }
 }
 
 void server_redirect(ClientConnection *conn, const char *url) {
     if (!conn || !url) return;
+    // Sanitiza CRLF no URL para prevenir HTTP Response Splitting
+    char safe_url[1024];
+    int si = 0;
+    for (int i = 0; url[i] != '\0' && si < (int)sizeof(safe_url) - 1; i++) {
+        if (url[i] != '\r' && url[i] != '\n') {
+            safe_url[si++] = url[i];
+        }
+    }
+    safe_url[si] = '\0';
+
     char headers[1024];
     snprintf(headers, sizeof(headers),
              "HTTP/1.1 302 Found\r\n"
@@ -370,7 +450,7 @@ void server_redirect(ClientConnection *conn, const char *url) {
              "Content-Length: 0\r\n"
              "%s"
              "Connection: close\r\n\r\n",
-             url, conn->response_headers);
+             safe_url, conn->response_headers);
     server_conn_write(conn, headers, strlen(headers));
 }
 
@@ -408,6 +488,8 @@ int server_serve_file(ClientConnection *conn, const char *filepath, const char *
     fseek(f, 0, SEEK_END);
     long fsize = ftell(f);
     fseek(f, 0, SEEK_SET);
+    
+    server_add_header(conn, "Cache-Control: public, max-age=3600\r\n");
     
     char headers[1024];
     snprintf(headers, sizeof(headers),
@@ -555,6 +637,14 @@ static void *http_worker_thread(void *arg) {
             }
         }
 
+        const char *trusted_host = getenv("TRUSTED_DOMAIN");
+        if (!trusted_host || trusted_host[0] == '\0') trusted_host = "localhost";
+        // Valida o Host header contra domínio confiável para evitar Open Redirect
+        if (strcmp(host, trusted_host) != 0) {
+            strncpy(host, trusted_host, sizeof(host) - 1);
+            host[sizeof(host) - 1] = '\0';
+        }
+
         char response[1024];
         snprintf(response, sizeof(response),
                  "HTTP/1.1 301 Moved Permanently\r\n"
@@ -662,6 +752,11 @@ static void handle_client(ClientConnection *conn) {
     req.admin_role = 2; // Guest/SUP fallback (Proteção contra Broken Access)
     conn->response_headers[0] = '\0';
     conn->anon_id[0] = '\0';
+    // Security headers (Etapa 4)
+    server_add_header(conn, "Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://fonts.gstatic.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' https://i.ibb.co https://cdn.alrigroup.com data:; manifest-src https://cdn.alrigroup.com; frame-ancestors 'none'\r\n");
+    server_add_header(conn, "X-Content-Type-Options: nosniff\r\n");
+    server_add_header(conn, "X-Frame-Options: DENY\r\n");
+    server_add_header(conn, "Strict-Transport-Security: max-age=31536000; includeSubDomains\r\n");
     
     // Extrai o corpo (body) da requisição separando por duplo CRLF
     *body_start = '\0'; // Quebra a string para isolar os headers
@@ -766,20 +861,11 @@ static void handle_client(ClientConnection *conn) {
         }
     }
 
-    // [FIX 1.2] Evita Evasão do IP-Binding em Servidores via Reverse Proxy
-    const char *xff = get_header(&req, "X-Forwarded-For");
-    if (!xff) xff = get_header(&req, "X-Real-IP");
-    if (xff) {
-        char *comma = strchr(xff, ',');
-        if (comma) {
-            int len = comma - xff;
-            if (len > 63) len = 63;
-            strncpy(conn->client_ip, xff, len);
-            conn->client_ip[len] = '\0';
-        } else {
-            strncpy(conn->client_ip, xff, 63);
-            conn->client_ip[63] = '\0';
-        }
+    // [FIX 1.2.1] Se atrás do Cloudflare, confia em CF-Connecting-IP
+    const char *cf_ip = get_header(&req, "CF-Connecting-IP");
+    if (cf_ip) {
+        strncpy(conn->client_ip, cf_ip, sizeof(conn->client_ip) - 1);
+        conn->client_ip[sizeof(conn->client_ip) - 1] = '\0';
     }
 
     // Rastreamento Anonimo de Visitantes
@@ -795,10 +881,14 @@ static void handle_client(ClientConnection *conn) {
     }
     if (conn->anon_id[0] == '\0') {
         unsigned char rand_bytes[32];
-        RAND_bytes(rand_bytes, 32);
-        for (int i = 0; i < 32; i++) snprintf(conn->anon_id + (i * 2), 3, "%02x", rand_bytes[i]);
+        if (RAND_bytes(rand_bytes, 32) != 1) {
+            arc_log("ERROR", "Failed to generate random bytes for anonymous ID");
+            snprintf(conn->anon_id, sizeof(conn->anon_id), "%lx%x", (unsigned long)time(NULL), getpid());
+        } else {
+            for (int i = 0; i < 32; i++) snprintf(conn->anon_id + (i * 2), 3, "%02x", rand_bytes[i]);
+        }
         snprintf(conn->response_headers + strlen(conn->response_headers), 1024 - strlen(conn->response_headers),
-                 "Set-Cookie: ARC_ANON_ID=%s; Path=/; HttpOnly; SameSite=Lax\r\n", conn->anon_id);
+                 "Set-Cookie: ARC_ANON_ID=%s; Path=/; HttpOnly; SameSite=Lax; Secure\r\n", conn->anon_id);
     }
 
     // Repasse absoluto para a Camada de Aplicação (Cérebro / ar-ws)

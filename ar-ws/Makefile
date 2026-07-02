@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -D_GNU_SOURCE -Wall -g -pthread -w -I. -I$(SHARED_DIR) -I$(BEMF_DIR) -I/usr/include/postgresql
+CFLAGS = -D_GNU_SOURCE -Wall -Wextra -O2 -g -pthread -I. -I$(SHARED_DIR) -I$(BEMF_DIR) -I/usr/include/postgresql
 LIBS = -lssl -lcrypto -lpq
 
 # Directories
@@ -27,6 +27,10 @@ SRCS = main.c \
        $(ROUTES_DIR)/route_home.c \
        $(ROUTES_DIR)/route_manager_dashboard.c \
        $(ROUTES_DIR)/route_manager_login.c \
+       $(ROUTES_DIR)/route_sitemap.c \
+       $(ROUTES_DIR)/route_prsm.c \
+       $(ROUTES_DIR)/route_cdn.c \
+       $(ROUTES_DIR)/route_cdn_admin.c \
        route_api.c \
        route_utils.c \
        $(BEMF_DIR)/server.c \

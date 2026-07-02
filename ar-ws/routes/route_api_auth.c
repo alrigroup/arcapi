@@ -22,13 +22,18 @@ void api_login_handler(ClientConnection *conn, HttpRequest *req) {
         server_send_response(conn, 400, "application/json", "{\"error\": \"Missing username or password hash\"}");
         return;
     }
+
+    if (strlen(u->valuestring) > 64 || strlen(p->valuestring) > 128) {
+        server_send_response(conn, 400, "application/json", "{\"error\":\"Field too long.\"}");
+        return;
+    }
     
     int logged_role = 2;
     if (server_validate_admin_login(u->valuestring, p->valuestring, server_get_client_ip(conn), &logged_role)) {
         const char *token = server_create_admin_session(u->valuestring, server_get_client_ip(conn));
         if (token) {
             char cookie_buf[1024];
-            snprintf(cookie_buf, sizeof(cookie_buf), "Set-Cookie: arc_admin_token=%s; Path=/; HttpOnly; SameSite=Lax\r\n", token);
+            snprintf(cookie_buf, sizeof(cookie_buf), "Set-Cookie: arc_admin_token=%s; Path=/; HttpOnly; SameSite=Lax; Secure\r\n", token);
             server_add_header(conn, cookie_buf);
             
             cJSON *resp = cJSON_CreateObject();
@@ -58,6 +63,6 @@ void api_logout_handler(ClientConnection *conn, HttpRequest *req) {
         }
     }
     
-    server_add_header(conn, "Set-Cookie: arc_admin_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT\r\n");
+    server_add_header(conn, "Set-Cookie: arc_admin_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure\r\n");
     server_send_response(conn, 200, "application/json", "{\"message\": \"Logged out successfully\"}");
 }

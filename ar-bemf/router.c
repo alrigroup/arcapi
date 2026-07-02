@@ -64,14 +64,17 @@ void router_dispatch(ClientConnection *conn, HttpRequest *req) {
         current = current->next;
     }
     
-    // Check for wildcard routes
+    // Check for wildcard routes (domain-specific first, catch-all fallback)
+    Route *catch_all = NULL;
     for (int i = 0; i < ROUTE_HASH_SIZE; i++) {
         current = route_hash[i];
         while (current != NULL) {
             int len = strlen(current->path);
             if (len > 0 && current->path[len - 1] == '*') {
                 if (strncmp(current->path, req->path, len - 1) == 0 && strcmp(current->method, req->method) == 0) {
-                    if (domain_matches(current->domain, req->host)) {
+                    if (current->domain[0] == '\0') {
+                        if (!catch_all) catch_all = current;
+                    } else if (domain_matches(current->domain, req->host)) {
                         current->handler(conn, req);
                         return;
                     }
@@ -79,6 +82,10 @@ void router_dispatch(ClientConnection *conn, HttpRequest *req) {
             }
             current = current->next;
         }
+    }
+    if (catch_all) {
+        catch_all->handler(conn, req);
+        return;
     }
     
     server_send_404(conn);

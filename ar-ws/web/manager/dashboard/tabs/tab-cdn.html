@@ -1,0 +1,60 @@
+<div class="panel">
+    <div class="panel-header">
+        <span>CDN: FILE MANAGER</span>
+        <span style="font-size:0.75rem;color:var(--text-muted)">cdn.alrigroup.com</span>
+    </div>
+    <div class="panel-content">
+        <div style="display:flex;gap:10px;margin-bottom:15px;flex-wrap:wrap;align-items:center;">
+            <button class="btn-reload" onclick="cdnBrowse('/')" style="border-color:var(--accent);color:var(--accent);">
+                <i class="fas fa-folder-open"></i> Root
+            </button>
+            <button class="btn-reload" onclick="cdnOpenUploadModal()" style="border-color:var(--info);color:var(--info);">
+                <i class="fas fa-upload"></i> Upload
+            </button>
+            <button class="btn-reload" onclick="cdnLinkClick()" style="border-color:var(--warning);color:var(--warning);">
+                <i class="fas fa-link"></i> Link File
+            </button>
+            <button class="btn-reload" onclick="cdnMkdirClick()" style="border-color:var(--success);color:var(--success);">
+                <i class="fas fa-folder-plus"></i> New Folder
+            </button>
+        </div>
+
+        <div id="cdnPath" style="font-family:monospace;font-size:0.85rem;color:var(--text-muted);margin-bottom:10px;">
+            / (root)
+        </div>
+
+        <div id="cdnStatus" style="font-size:0.85rem;margin-bottom:10px;"></div>
+        <div id="cdnUploadProgress" style="font-size:0.85rem;margin-bottom:10px;display:none;"></div>
+
+        <input type="file" id="cdnUploadInput" style="display:none" multiple>
+
+        <div style="overflow-x:auto;">
+            <table id="cdnTable" style="width:100%;">
+                <thead>
+                    <tr>
+                        <th style="width:30%;">Path</th>
+                        <th style="width:15%;">Size</th>
+                        <th style="width:15%;">Type</th>
+                        <th style="width:10%;">Downloads</th>
+                        <th style="width:10%;">Source</th>
+                        <th style="width:20%;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="cdnTbody">
+                    <tr><td colspan="6" style="text-align:center;color:var(--text-muted);">Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="panel" id="cdnStatsPanel" style="display:none;">
+    <div class="panel-header">
+        <span>CDN: FILE STATISTICS</span>
+        <span id="cdnStatsPath" style="font-size:0.75rem;color:var(--text-muted)"></span>
+    </div>
+    <div class="panel-content">
+        <div id="cdnStatsContent" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:15px;"></div>
+    </div>
+</div>
+

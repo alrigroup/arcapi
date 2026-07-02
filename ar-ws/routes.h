@@ -36,6 +36,20 @@ void api_delete_handler(ClientConnection *conn, HttpRequest *req);
 void api_sync_batch_handler(ClientConnection *conn, HttpRequest *req);
 
 void api_data_handler(ClientConnection *conn, HttpRequest *req);
+void sitemap_handler(ClientConnection *conn, HttpRequest *req);
+
+// Sub-brands
+void prsm_handler(ClientConnection *conn, HttpRequest *req);
+
+// CDN
+void cdn_handler(ClientConnection *conn, HttpRequest *req);
+void cdn_admin_list_handler(ClientConnection *conn, HttpRequest *req);
+void cdn_admin_upload_handler(ClientConnection *conn, HttpRequest *req);
+void cdn_admin_link_handler(ClientConnection *conn, HttpRequest *req);
+void cdn_admin_delete_handler(ClientConnection *conn, HttpRequest *req);
+void cdn_admin_mkdir_handler(ClientConnection *conn, HttpRequest *req);
+void cdn_admin_stats_handler(ClientConnection *conn, HttpRequest *req);
+void cdn_admin_rename_handler(ClientConnection *conn, HttpRequest *req);
 
 // Utility
 void sendpage(ClientConnection *conn, const char *folder_name);

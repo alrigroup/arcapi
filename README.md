@@ -9,11 +9,13 @@ ar-core/       Orchestrator — compiles, manages, and monitors arc_server
 ar-ws/         Web server — routes, APIs, dashboard, static files
 ar-bemf/       Framework — HTTP parser, router, SSL, rate limiter
 shared/        Shared utilities (cJSON)
+storage/       CDN assets and file storage
 ```
 
 - **ar-core** runs as root, handles compilation, hot-reload, and lifecycle
 - **ar-ws** is the web server with all routes and business logic
 - **ar-bemf** provides the HTTP/HTTPS server framework and routing engine
+- **storage/cdn/** serves as the CDN asset repository (icons, logos, manifests)
 
 ## Security Model
 
@@ -61,6 +63,7 @@ The server will:
 | `/home`               | Home page            |
 | `/manager/login`      | Admin login          |
 | `/manager/dashboard`  | Admin dashboard      |
+| `/prsm`               | PRSM (press room)    |
 
 ### Auth API
 | Method | Path                     | Description        |
@@ -68,7 +71,7 @@ The server will:
 | POST   | `/manager/api/login`     | Authenticate admin |
 | POST   | `/manager/api/logout`    | End session        |
 
-### Admin API (ROOT only)
+### Admin API (ROOT/ADMIN)
 | Method | Path                             | Description            |
 | ------ | -------------------------------- | ---------------------- |
 | GET    | `/manager/api/admin/list`        | List admins            |
@@ -85,8 +88,9 @@ The server will:
 | GET    | `/manager/api/system/info`   | CPU, RAM, disk, network  |
 | POST   | `/manager/api/system/restart`| Recompile and restart    |
 | GET    | `/manager/api/config`        | Get system config        |
+| POST   | `/manager/api/config/tty`    | Toggle TTY output        |
 
-### Data API
+### Data & Monitoring API
 | Method | Path                     | Description               |
 | ------ | ------------------------ | ------------------------- |
 | GET    | `/manager/api/metrics`   | Route access metrics      |
@@ -98,6 +102,19 @@ The server will:
 | POST   | `/manager/api/delete`    | Delete file               |
 | GET    | `/api/data`              | Public data endpoint      |
 
+### TTY API (ROOT/ADMIN)
+| Method | Path                       | Description          |
+| ------ | -------------------------- | -------------------- |
+| POST   | `/manager/api/tty/text`    | Write to TTY1        |
+| POST   | `/manager/api/tty/clear`   | Clear TTY1           |
+| POST   | `/manager/api/tty/logo`    | Print logo to TTY1   |
+
+### CDN API
+| Method | Path                       | Description              |
+| ------ | -------------------------- | ------------------------ |
+| GET    | `/manager/api/component/*` | Component data           |
+| GET    | `/sitemap.xml`             | XML sitemap              |
+
 ## Frontend
 
 The admin dashboard is a single-page application with tabs for:
@@ -106,8 +123,10 @@ The admin dashboard is a single-page application with tabs for:
 - **System Logs** — PostgreSQL audit trail
 - **Management** — user CRUD with role assignment
 - **System Monitor** — CPU, RAM, disk, network, process table
+- **CDN** — CDN asset management
 - **Updates** — hot-reload file synchronization
 - **Settings** — manual recompilation
+- **TTY** — TTY1 terminal control
 
 ## Sync & Hot-Reload
 
@@ -116,6 +135,19 @@ The dashboard includes a file synchronization system:
 2. SHA-256 hashes are compared with the server
 3. Only changed files are transferred
 4. Server auto-restarts with the new code
+
+## CDN Assets
+
+Static assets (logos, icons, favicons) are served from `storage/cdn/`:
+- ALRI Group branding (ALRI, ALRIONLY, AR variants in multiple colors/formats)
+- PWA icons (android-chrome, apple-touch-icon, favicon variants)
+- Web app manifest (`site.webmanifest`)
+
+## Documentation
+
+Full technical documentation is available in Portuguese (PT-BR) at the Obsidian vault:
+- `C:\Users\WMAROS11U\Documents\Obsidian Vault\arcwb\ALRI CWB.md`
+- Module docs for: ar-core, ar-bemf (api/router/server/ratelimit), ar-ws (core/routes)
 
 ## License
 

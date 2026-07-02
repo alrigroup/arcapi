@@ -7,6 +7,7 @@ const translations = {
         tab_users: "Management",
         tab_settings: "Settings",
         tab_update: "Updates",
+        tab_cdn: "CDN",
         p_analytics_h: "ANALYTICS: ACCESS BY ROUTE",
         p_firewall_h: "FIREWALL: ORIGINS & TRAFFIC",
         th_ts: "Timestamp",
@@ -20,12 +21,12 @@ const translations = {
         th_ip_origin: "IP Origin",
         p_logs_h: "SYSTEM: INTERNAL LOGS",
         p_admin_h: "SEC: ADMIN MANAGEMENT",
-        p_admin_info: "Credentials are encrypted (Client-Side Hashing) before leaving the browser.",
+        p_admin_info: "Credentials are hashed (SHA-256) before leaving the browser.",
         ph_new_user: "New Username",
         ph_new_pass: "New Password",
         btn_create_admin: "Create Administrator",
         p_update_h: "HOT-RELOAD: FILE MANAGER & RESTART",
-        p_update_info: "Select the project root folder. The system will sync only modified files (Smart Sync SHA-256) with E2EE security.",
+        p_update_info: "Select the project root folder. The system will sync only modified files (Smart Sync SHA-256).",
         span_drop: "[ Click to Select Folder (Sync) ]",
         opt_none: "Save Only (No Reload)",
         opt_api: "Restart API (Recompile arc_server)",
@@ -45,7 +46,9 @@ const translations = {
         p_settings_recompile_title: "Manual System Recompilation",
         p_settings_recompile_desc: "Force the system to rebuild and restart modules. Requires ROOT privileges and Sudo confirmation.",
         btn_recompile_api: "Recompile API",
-        btn_recompile_core: "Full Core Restart"
+        btn_recompile_core: "Full Core Restart",
+        cdn_drop_hint: "Drag & drop files here or click Upload",
+        cdn_drop_support: "Multiple files supported"
     },
     pt: {
         lang_btn: "EN-US",
@@ -55,6 +58,7 @@ const translations = {
         tab_users: "Gerenciamento",
         tab_settings: "Configurações",
         tab_update: "Atualizações",
+        tab_cdn: "CDN",
         p_analytics_h: "ANALYTICS: ACESSOS POR ROTA",
         p_firewall_h: "FIREWALL: ORIGENS E TRÁFEGO",
         th_ts: "Data/Hora",
@@ -68,12 +72,12 @@ const translations = {
         th_ip_origin: "IP de Origem",
         p_logs_h: "SISTEMA: LOGS INTERNOS",
         p_admin_h: "SEC: GESTÃO DE ADMINISTRADORES",
-        p_admin_info: "Credenciais são criptografadas (Client-Side Hashing) antes de deixar o navegador.",
+        p_admin_info: "Credenciais são hasheadas (SHA-256) antes de deixar o navegador.",
         ph_new_user: "Novo Usuário",
         ph_new_pass: "Nova Senha",
         btn_create_admin: "Criar Administrador",
         p_update_h: "HOT-RELOAD: SINCRONISMO E REINICIALIZAÇÃO",
-        p_update_info: "Selecione a pasta raiz do projeto. O sistema sincronizará apenas arquivos modificados (Smart Sync SHA-256) com segurança E2EE.",
+        p_update_info: "Selecione a pasta raiz do projeto. O sistema sincronizará apenas arquivos modificados (Smart Sync SHA-256).",
         span_drop: "[ Clique para Selecionar a Pasta (Sync) ]",
         opt_none: "Apenas Salvar (Nenhum Reload)",
         opt_api: "Restart API (Recompilar arc_server)",
@@ -93,7 +97,9 @@ const translations = {
         p_settings_recompile_title: "Recompilação Manual do Sistema",
         p_settings_recompile_desc: "Força a reconstrução e o reinício dos módulos do sistema. Requer privilégios ROOT e confirmação Sudo.",
         btn_recompile_api: "Recompilar API",
-        btn_recompile_core: "Recompilar Todo o Core"
+        btn_recompile_core: "Recompilar Todo o Core",
+        cdn_drop_hint: "Arraste arquivos aqui ou clique em Upload",
+        cdn_drop_support: "Múltiplos arquivos suportados"
     }
 };
 
@@ -194,6 +200,8 @@ function enforcePermissions() {
         if (navAddUser) navAddUser.style.display = 'none';
         const navSettings = document.getElementById('nav-settings');
         if (navSettings) navSettings.style.display = 'none';
+        const navCdn = document.getElementById('nav-cdn');
+        if (navCdn) navCdn.style.display = 'none';
         const btnClearLogs = document.getElementById('btn-clear-logs');
         if (btnClearLogs) btnClearLogs.style.display = 'none';
     }
@@ -208,7 +216,7 @@ async function loadTabContent(tabId) {
     const tabEl = document.getElementById(tabId);
     if (tabEl.innerHTML.trim() === '') {
         try {
-            const res = await fetch(`/manager/api/component/${tabId}`, { credentials: 'same-origin' });
+            const res = await fetch(`/manager/api/component/${tabId}?_=${Date.now()}`, { credentials: 'same-origin' });
             if (res.status === 403) {
                 tabEl.innerHTML = `<div class="panel"><div class="panel-content" style="color:var(--danger);">Restricted Access to Protected Content.</div></div>`;
                 return false;
@@ -221,6 +229,8 @@ async function loadTabContent(tabId) {
 
             if (tabId === 'tab-analytics') {
                 initChart();
+            } else if (tabId === 'tab-cdn') {
+                cdnBrowse('/');
             } else if (tabId === 'tab-update') {
                 const fileInput = document.getElementById('fileUpload');
                 const lblDisplay = document.getElementById('fileNameDisplay');
@@ -242,6 +252,428 @@ async function loadTabContent(tabId) {
     }
     return true;
 }
+
+// ─── CDN Functions ────────────────────────────────────────────────────────────
+let cdnCurrentDir = '/';
+
+async function cdnBrowse(dir) {
+    cdnCurrentDir = dir;
+    document.getElementById('cdnPath').textContent = dir;
+    document.getElementById('cdnTable').querySelector('tbody').innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);">Loading...</td></tr>';
+
+    const data = await fetchAPI(`/manager/api/cdn/files?dir=${encodeURIComponent(dir)}`);
+    const tbody = document.getElementById('cdnTbody');
+    if (!data || !data.files) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--danger);">Failed to load</td></tr>';
+        return;
+    }
+
+    if (dir !== '/') {
+        const parent = dir.substring(0, dir.lastIndexOf('/'));
+        if (parent === '') dir = '/';
+        document.getElementById('cdnPath').innerHTML = `<a href="#" onclick="cdnBrowse('/'); return false;" style="color:var(--accent);">root</a>`;
+        const parts = dir.split('/').filter(Boolean);
+        let cum = '';
+        for (const p of parts) {
+            cum += '/' + p;
+            document.getElementById('cdnPath').innerHTML += ` / <a href="#" onclick="cdnBrowse('${cum}'); return false;" style="color:var(--accent);">${sanitizeHTML(p)}</a>`;
+        }
+    }
+
+    const files = data.files;
+    if (files.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);">Empty directory</td></tr>';
+        return;
+    }
+
+    const dirs = new Set();
+    for (const f of files) {
+        const rel = f.path.substring(dir.length);
+        const idx = rel.indexOf('/', 1);
+        if (idx > 0) {
+            dirs.add(rel.substring(0, idx + 1));
+        }
+    }
+
+    let html = '';
+    for (const d of dirs) {
+        const clean = d.replace(/^\//, '');
+        const fullPath = dir === '/' ? '/' + clean : dir + '/' + clean;
+        html += `<tr style="cursor:pointer;" onclick="cdnBrowse('${fullPath}')">
+            <td><i class="fas fa-folder" style="color:var(--warning);margin-right:8px;"></i>${sanitizeHTML(clean)}/</td>
+            <td>-</td>
+            <td>directory</td>
+            <td>-</td>
+            <td>-</td>
+            <td></td>
+        </tr>`;
+    }
+
+    for (const f of files) {
+        const displayName = f.path.substring(dir.length).replace(/^\//, '');
+        if (displayName.includes('/')) continue;
+
+        const size = f.file_size > 1024 * 1024
+            ? (f.file_size / 1024 / 1024).toFixed(1) + ' MB'
+            : f.file_size > 1024
+                ? (f.file_size / 1024).toFixed(1) + ' KB'
+                : f.file_size + ' B';
+        const mime = f.mime_type || 'application/octet-stream';
+        const shortMime = mime.split('/').pop();
+        const src = f.is_linked ? 'link' : 'upload';
+        const cdnUrl = `https://cdn.alrigroup.com${sanitizeHTML(f.path)}`;
+        html += `<tr>
+            <td><a href="${cdnUrl}" target="_blank" style="color:var(--text-main);text-decoration:none;" title="${cdnUrl}">
+                <i class="fas fa-file" style="color:var(--info);margin-right:8px;"></i>${sanitizeHTML(displayName)}
+            </a></td>
+            <td>${size}</td>
+            <td style="font-size:0.75rem;">${sanitizeHTML(shortMime)}</td>
+            <td>${f.download_count}</td>
+            <td><span style="color:${src === 'link' ? 'var(--warning)' : 'var(--success)'};">${src}</span></td>
+            <td>
+                <button class="btn-reload" style="border-color:var(--info);color:var(--info);font-size:0.7rem;padding:2px 8px;" onclick="event.stopPropagation();window.open('${cdnUrl}','_blank')">View</button>
+                <button class="btn-reload" style="border-color:var(--info);color:var(--info);font-size:0.7rem;padding:2px 8px;" onclick="event.stopPropagation();cdnStats(${f.id},'${sanitizeHTML(f.path)}')">Stats</button>
+                <button class="btn-reload" style="border-color:var(--warning);color:var(--warning);font-size:0.7rem;padding:2px 8px;" onclick="event.stopPropagation();cdnRename(${f.id},'${sanitizeHTML(f.path)}')">Rename</button>
+                <button class="btn-reload" style="border-color:var(--danger);color:var(--danger);font-size:0.7rem;padding:2px 8px;" onclick="event.stopPropagation();cdnDelete(${f.id},'${sanitizeHTML(f.path)}',${f.is_linked})">Delete</button>
+            </td>
+        </tr>`;
+    }
+    tbody.innerHTML = html;
+}
+
+let cdnSudoPass = null;
+
+function cdnOpenUploadModal() {
+    const overlay = document.createElement('div');
+    overlay.className = 'cdn-modal-overlay';
+    overlay.innerHTML = `
+        <div class="cdn-modal-box">
+            <div class="cdn-modal-header">
+                <span>Upload para <code style="color:var(--accent)">${sanitizeHTML(cdnCurrentDir)}</code></span>
+                <button class="cdn-modal-close" onclick="this.closest('.cdn-modal-overlay').remove()">&times;</button>
+            </div>
+            <div class="cdn-modal-dropzone" id="cdnModalDropZone">
+                <div class="cdn-modal-dropcontent">
+                    <i class="fas fa-cloud-upload-alt" style="font-size:3rem;color:var(--text-muted);margin-bottom:12px;"></i>
+                    <div style="font-size:1.1rem;color:var(--text-muted);margin-bottom:4px;">Arraste arquivos aqui</div>
+                    <div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:16px;">ou clique para selecionar</div>
+                    <button class="btn-reload" style="border-color:var(--accent);color:var(--accent);padding:12px 32px;font-size:1rem;">
+                        <i class="fas fa-folder-open"></i> Selecionar Arquivos
+                    </button>
+                    <div style="font-size:0.75rem;color:var(--text-muted);margin-top:12px;">Múltiplos arquivos suportados</div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    const dropZone = overlay.querySelector('#cdnModalDropZone');
+    const fileInput = document.getElementById('cdnUploadInput');
+
+    dropZone.addEventListener('dragenter', (e) => { e.preventDefault(); e.stopPropagation(); e.dataTransfer.dropEffect = 'copy'; dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); e.stopPropagation(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', (e) => { e.preventDefault(); e.stopPropagation(); dropZone.classList.remove('dragover'); });
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault(); e.stopPropagation(); dropZone.classList.remove('dragover');
+        overlay.remove();
+        const files = e.dataTransfer.files;
+        if (files.length > 0) cdnUploadFiles(files);
+    });
+    dropZone.addEventListener('click', () => {
+        fileInput.value = '';
+        fileInput.click();
+    });
+
+    fileInput.onchange = () => {
+        if (fileInput.files.length > 0) {
+            overlay.remove();
+            cdnUploadFiles(fileInput.files);
+        }
+    };
+
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+}
+
+async function cdnUploadFiles(files) {
+    if (!files || files.length === 0) return;
+    document.getElementById('cdnUploadInput').value = '';
+
+    const status = document.getElementById('cdnStatus');
+    const progress = document.getElementById('cdnUploadProgress');
+    progress.style.display = 'block';
+
+    if (!cdnSudoPass) {
+        const result = await modalManager.open(null,
+            `<p>Upload <strong>${files.length}</strong> file(s) to <code>${sanitizeHTML(cdnCurrentDir)}</code>?</p>
+             <p style="color:var(--text-muted);font-size:0.85rem;">Enter Sudo password once for all files.</p>`);
+        if (!result) { progress.style.display = 'none'; return; }
+        cdnSudoPass = result.confirm_pass;
+    }
+
+    let cdnConflictDecision = null;
+    let uploaded = 0, failed = 0, skipped = 0;
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const path = cdnCurrentDir === '/' ? '/' + file.name : cdnCurrentDir + '/' + file.name;
+        const pct = Math.round((i / files.length) * 100);
+        progress.innerHTML = `<span style="color:var(--warning)">[${i + 1}/${files.length}] Uploading ${sanitizeHTML(file.name)}... ${pct}%</span>`;
+
+        const result = await cdnUploadSingle(file, path, cdnConflictDecision);
+        if (result === 'conflict') {
+            const conflictResult = await cdnShowConflictModal(file.name, path);
+            if (conflictResult.action === 'cancel_all') {
+                progress.style.display = 'none';
+                status.innerHTML = `<span style="color:var(--danger)">Upload cancelled by user</span>`;
+                return;
+            }
+            cdnConflictDecision = conflictResult.decision;
+            const retry = await cdnUploadSingle(file, path, cdnConflictDecision);
+            if (retry === 'skipped') skipped++;
+            else if (retry === true) uploaded++;
+            else if (retry === 'conflict') failed++;
+            else failed++;
+        } else if (result === 'skipped') {
+            skipped++;
+        } else if (result === true) {
+            uploaded++;
+        } else {
+            failed++;
+        }
+    }
+
+    progress.style.display = 'none';
+
+    let msg = '';
+    if (failed === 0 && skipped === 0) {
+        msg = `<span style="color:var(--success)">${uploaded} file(s) uploaded successfully!</span>`;
+    } else if (failed === 0) {
+        msg = `<span style="color:var(--warning)">${uploaded} uploaded, ${skipped} skipped</span>`;
+    } else {
+        msg = `<span style="color:var(--danger)">${uploaded} ok, ${skipped} skipped, ${failed} failed</span>`;
+    }
+    status.innerHTML = msg;
+    cdnBrowse(cdnCurrentDir);
+}
+
+async function cdnShowConflictModal(filename, path) {
+    return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.className = 'cdn-modal-overlay';
+        overlay.innerHTML = `
+            <div class="cdn-modal-box" style="width:440px;">
+                <div class="cdn-modal-header">
+                    <span>File already exists</span>
+                </div>
+                <div class="cdn-modal-dropzone" style="border:none;margin:20px;padding:20px;cursor:default;">
+                    <div style="text-align:center;margin-bottom:20px;">
+                        <i class="fas fa-exclamation-triangle" style="font-size:2rem;color:var(--warning);margin-bottom:10px;"></i>
+                        <div style="font-size:1rem;font-weight:bold;margin-bottom:4px;">${sanitizeHTML(filename)}</div>
+                        <div style="font-size:0.85rem;color:var(--text-muted);">${sanitizeHTML(path)}</div>
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:8px;">
+                        <button class="btn-reload conflict-overwrite" style="border-color:var(--warning);color:var(--warning);padding:10px;">Overwrite</button>
+                        <button class="btn-reload conflict-overwrite-all" style="border-color:var(--warning);color:var(--warning);padding:10px;">Overwrite All</button>
+                        <button class="btn-reload conflict-skip" style="border-color:var(--text-muted);color:var(--text-muted);padding:10px;">Skip</button>
+                        <button class="btn-reload conflict-skip-all" style="border-color:var(--text-muted);color:var(--text-muted);padding:10px;">Skip All</button>
+                        <button class="btn-reload conflict-cancel" style="border-color:var(--danger);color:var(--danger);padding:10px;">Cancel Upload</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+        overlay.querySelector('.conflict-overwrite').onclick = () => { overlay.remove(); resolve({ action: 'continue', decision: 'overwrite' }); };
+        overlay.querySelector('.conflict-overwrite-all').onclick = () => { overlay.remove(); resolve({ action: 'continue', decision: 'overwrite_all' }); };
+        overlay.querySelector('.conflict-skip').onclick = () => { overlay.remove(); resolve({ action: 'continue', decision: 'skip' }); };
+        overlay.querySelector('.conflict-skip-all').onclick = () => { overlay.remove(); resolve({ action: 'continue', decision: 'skip_all' }); };
+        overlay.querySelector('.conflict-cancel').onclick = () => { overlay.remove(); resolve({ action: 'cancel_all', decision: null }); };
+    });
+}
+
+async function cdnUploadSingle(file, path, decision) {
+    if (decision === 'skip' || decision === 'skip_all') return 'skipped';
+    try {
+        const headers = {
+            'X-Target-Path': path,
+            'X-Confirm-Pass': cdnSudoPass
+        };
+        if (decision === 'overwrite' || decision === 'overwrite_all') {
+            headers['X-Overwrite'] = 'true';
+        }
+        const res = await fetch('/manager/api/cdn/upload', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: headers,
+            body: file
+        });
+        if (res.status === 409) return 'conflict';
+        return res.ok;
+    } catch {
+        return false;
+    }
+}
+
+async function cdnLinkClick() {
+    const status = document.getElementById('cdnStatus');
+
+    const bodyHtml = `
+        <p>Link an existing file from the server to the CDN.</p>
+        <div style="margin-bottom:10px;">
+            <label style="color:var(--text-muted);font-size:0.8rem;">Public CDN Path (starts with /):</label>
+            <input type="text" id="cdnLinkPath" value="${cdnCurrentDir === '/' ? '/' : cdnCurrentDir + '/'}" style="width:100%;padding:8px;background:#000;border:1px solid var(--border-color);color:var(--text-main);margin-top:5px;">
+        </div>
+        <div style="margin-bottom:10px;">
+            <label style="color:var(--text-muted);font-size:0.8rem;">Full file path on server:</label>
+            <input type="text" id="cdnLinkFilePath" placeholder="/var/www/image.jpg" style="width:100%;padding:8px;background:#000;border:1px solid var(--border-color);color:var(--text-main);margin-top:5px;">
+        </div>
+        <p style="color:var(--text-muted);font-size:0.85rem;">Enter Sudo password to confirm.</p>
+    `;
+
+    const result = await modalManager.open(null, bodyHtml);
+    if (!result) return;
+
+    const linkPath = document.getElementById('cdnLinkPath').value;
+    const filePath = document.getElementById('cdnLinkFilePath').value;
+
+    if (!linkPath || !filePath) {
+        status.innerHTML = '<span style="color:var(--danger)">Both fields required</span>';
+        return;
+    }
+
+    const res = await fetch('/manager/api/cdn/link', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            path: linkPath,
+            file_path: filePath,
+            confirm_pass: result.confirm_pass
+        })
+    });
+
+    if (res.ok) {
+        status.innerHTML = '<span style="color:var(--success)">File linked successfully!</span>';
+        cdnBrowse(cdnCurrentDir);
+    } else {
+        const err = await res.json().catch(() => ({ error: 'Link failed' }));
+        status.innerHTML = `<span style="color:var(--danger)">${sanitizeHTML(err.error)}</span>`;
+    }
+}
+
+async function cdnMkdirClick() {
+    const status = document.getElementById('cdnStatus');
+
+    const promptResult = await modalManager.open(null, `<p>Directory path (starts with /):</p><input type="text" id="modalExtraInput" value="${cdnCurrentDir === '/' ? '/new-folder' : cdnCurrentDir + '/new-folder'}" style="width:100%;padding:8px;background:#000;border:1px solid var(--border-color);color:var(--text-main);margin-top:5px;">`, { promptMode: true });
+    const path = promptResult ? promptResult.extraData : null;
+    if (!path) return;
+
+    const result = await modalManager.open(null, `<p>Create directory <code>${sanitizeHTML(path)}</code>?</p><p style="color:var(--text-muted);font-size:0.85rem;">Enter Sudo password.</p>`);
+    if (!result) return;
+
+    const res = await fetch('/manager/api/cdn/mkdir', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path, confirm_pass: result.confirm_pass })
+    });
+
+    if (res.ok) {
+        status.innerHTML = '<span style="color:var(--success)">Directory created</span>';
+        cdnBrowse(cdnCurrentDir);
+    } else {
+        status.innerHTML = '<span style="color:var(--danger)">Failed to create directory</span>';
+    }
+}
+
+async function cdnDelete(id, path, isLinked) {
+    const status = document.getElementById('cdnStatus');
+    const fileLabel = isLinked ? 'link' : 'uploaded file';
+    const extra = isLinked ? '<p style="color:var(--warning);font-size:0.85rem;">This is a link. The original file will NOT be deleted from disk.</p>' : '<p style="color:var(--danger);font-size:0.85rem;">The physical file will be deleted from storage.</p>';
+
+    const result = await modalManager.open(null, `<p>Delete ${fileLabel}: <code>${sanitizeHTML(path)}</code>?</p>${extra}<p style="color:var(--text-muted);font-size:0.85rem;">Enter Sudo password.</p>`);
+    if (!result) return;
+
+    const res = await fetch('/manager/api/cdn/delete', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json', 'X-Confirm-Pass': result.confirm_pass },
+        body: JSON.stringify({ id })
+    });
+
+    if (res.ok) {
+        status.innerHTML = '<span style="color:var(--success)">Deleted</span>';
+        cdnBrowse(cdnCurrentDir);
+    } else {
+        status.innerHTML = '<span style="color:var(--danger)">Delete failed</span>';
+    }
+}
+
+async function cdnStats(id, path) {
+    const panel = document.getElementById('cdnStatsPanel');
+    panel.style.display = 'block';
+    document.getElementById('cdnStatsPath').textContent = path;
+
+    const data = await fetchAPI(`/manager/api/cdn/stats?id=${id}`);
+    const content = document.getElementById('cdnStatsContent');
+    if (!data) {
+        content.innerHTML = '<span style="color:var(--danger)">Failed to load stats</span>';
+        return;
+    }
+
+    content.innerHTML = `
+        <div class="panel" style="padding:15px;text-align:center;">
+            <div style="font-size:1.8rem;font-weight:700;color:var(--accent);">${data.download_count || 0}</div>
+            <div style="font-size:0.75rem;color:var(--text-muted);">Total Downloads</div>
+        </div>
+        <div class="panel" style="padding:15px;text-align:center;">
+            <div style="font-size:1.4rem;font-weight:600;color:var(--info);">${data.last_1m || 0}</div>
+            <div style="font-size:0.75rem;color:var(--text-muted);">Last 1 min</div>
+        </div>
+        <div class="panel" style="padding:15px;text-align:center;">
+            <div style="font-size:1.4rem;font-weight:600;color:var(--info);">${data.last_5m || 0}</div>
+            <div style="font-size:0.75rem;color:var(--text-muted);">Last 5 min</div>
+        </div>
+        <div class="panel" style="padding:15px;text-align:center;">
+            <div style="font-size:1.4rem;font-weight:600;color:var(--info);">${data.last_1h || 0}</div>
+            <div style="font-size:0.75rem;color:var(--text-muted);">Last 1 hour</div>
+        </div>
+        <div class="panel" style="padding:15px;text-align:center;">
+            <div style="font-size:1.4rem;font-weight:600;color:var(--info);">${data.last_24h || 0}</div>
+            <div style="font-size:0.75rem;color:var(--text-muted);">Last 24 hours</div>
+        </div>
+        <div class="panel" style="padding:15px;text-align:center;">
+            <div style="font-size:0.85rem;color:var(--text-muted);font-family:monospace;">${data.file_size > 1048576 ? (data.file_size / 1048576).toFixed(1) + ' MB' : data.file_size > 1024 ? (data.file_size / 1024).toFixed(1) + ' KB' : data.file_size + ' B'}</div>
+            <div style="font-size:0.75rem;color:var(--text-muted);">File Size</div>
+        </div>
+    `;
+}
+
+async function cdnRename(id, path) {
+    const status = document.getElementById('cdnStatus');
+
+    const promptResult = await modalManager.open(null, `<p>New CDN path (starts with /):</p><input type="text" id="modalExtraInput" value="${sanitizeHTML(path)}" style="width:100%;padding:8px;background:#000;border:1px solid var(--border-color);color:var(--text-main);margin-top:5px;">`, { promptMode: true });
+    const newPath = promptResult ? promptResult.extraData : null;
+    if (!newPath || newPath === path) return;
+
+    const result = await modalManager.open(null, `<p>Change URL from <code>${sanitizeHTML(path)}</code> to <code>${sanitizeHTML(newPath)}</code>?</p><p style="color:var(--text-muted);font-size:0.85rem;">Enter Sudo password.</p>`);
+    if (!result) return;
+
+    const res = await fetch('/manager/api/cdn/rename', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json', 'X-Confirm-Pass': result.confirm_pass },
+        body: JSON.stringify({ id, new_path: newPath })
+    });
+
+    if (res.ok) {
+        status.innerHTML = '<span style="color:var(--success)">URL changed!</span>';
+        cdnBrowse(cdnCurrentDir);
+    } else {
+        const err = await res.json().catch(() => ({ error: 'Rename failed' }));
+        status.innerHTML = `<span style="color:var(--danger)">${sanitizeHTML(err.error)}</span>`;
+    }
+}
+// ─── End CDN Functions ────────────────────────────────────────────────────────
 
 function checkAuth() {
     enforcePermissions();
@@ -590,10 +1022,10 @@ async function actionSystemRestart(mode) {
 async function sendTTYText() {
     const text = document.getElementById('tty-text').value;
     if (!text) return;
-    document.getElementById('tty-status').innerText = "Encrypting payload...";
+    document.getElementById('tty-status').innerText = "Encoding payload...";
     document.getElementById('tty-status').style.color = "var(--warning)";
 
-    // Secure encode prevents Plain Text and natively handles UTF-8 Accents
+    // Base64 encoding for safe UTF-8 transport
     const b64Text = btoa(unescape(encodeURIComponent(text)));
 
     const res = await fetch('/manager/api/tty/text', {
@@ -634,21 +1066,26 @@ async function sha256(message) {
 // Modal Sudo-Mode Manager
 const modalManager = {
     resolve: null,
-    open: function (titleKey, bodyHtml) {
+    promptMode: false,
+    open: function (titleKey, bodyHtml, options = {}) {
         return new Promise((resolve) => {
+            this.promptMode = options.promptMode || false;
             const titleEl = document.getElementById('modalTitle');
             if (titleKey) titleEl.setAttribute('data-i18n', titleKey);
 
             document.getElementById('modalBody').innerHTML = bodyHtml;
             document.getElementById('modalConfirmPass').value = '';
+            const passField = document.getElementById('modalConfirmPass');
+            passField.style.display = this.promptMode ? 'none' : 'block';
             const modal = document.getElementById('adminActionModal');
 
             modal.style.display = 'flex';
-            // Small delay to trigger smooth CSS transition
             setTimeout(() => modal.classList.add('active'), 10);
             updateUI();
 
-            setTimeout(() => document.getElementById('modalConfirmPass').focus(), 150);
+            if (!this.promptMode) {
+                setTimeout(() => passField.focus(), 150);
+            }
             this.resolve = resolve;
         });
     },
@@ -665,6 +1102,15 @@ const modalManager = {
         }
     },
     confirm: async function () {
+        if (this.promptMode) {
+            const extraInput = document.getElementById('modalExtraInput');
+            const extraData = extraInput ? extraInput.value : null;
+            const res = this.resolve;
+            this.resolve = null;
+            this.close();
+            if (res) res({ extraData });
+            return;
+        }
         const pass = document.getElementById('modalConfirmPass').value;
         if (!pass) return;
         const extraInput = document.getElementById('modalExtraInput');
@@ -754,7 +1200,9 @@ async function actionDelete() {
 
 async function actionResetPass() {
     const name = selectedAdminUser;
-    const newPass = prompt(`Enter new password for ${name}:`);
+
+    const promptResult = await modalManager.open(null, `<p>New password for <b>${sanitizeHTML(name)}</b>:</p><input type="password" id="modalExtraInput" placeholder="New password" style="width:100%;padding:8px;background:#000;border:1px solid var(--border-color);color:var(--text-main);margin-top:5px;">`, { promptMode: true });
+    const newPass = promptResult ? promptResult.extraData : null;
     if (!newPass) return;
 
     const res = await modalManager.open('modal_restart_title', `Confirm Sudo to reset password for <b>${name}</b>.`);
@@ -1045,9 +1493,20 @@ function pollData() {
         fetchAdmins();
     } else if (currentTab === 'tab-system') {
         fetchSystemInfo();
+    } else if (currentTab === 'tab-cdn') {
+        // CDN tab refreshes on manual navigation only
     }
 }
 
 checkAuth();
-setInterval(pollData, 5000);
+let pollInterval = setInterval(pollData, 5000);
 setInterval(validateSession, 10000);
+
+document.addEventListener('visibilitychange', () => {
+    clearInterval(pollInterval);
+    if (document.hidden) {
+        pollInterval = setInterval(pollData, 30000);
+    } else {
+        pollInterval = setInterval(pollData, 5000);
+    }
+});

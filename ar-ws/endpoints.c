@@ -46,7 +46,25 @@ void register_all_endpoints() {
     // Data API
     add_route("/api/data", "GET", main_domain, api_data_handler);
 
-    
+    // Sitemap (subdomínio dev)
+    add_route("/arcwb/sitemap", "GET", "dev.alrigroup.com", sitemap_handler);
+
+    // Sub-brands
+    add_route("/", "GET", "prsm.alrigroup.com", prsm_handler);
+    add_route("/prsm", "GET", main_domain, prsm_handler);
+
+    // CDN Public (subdomínio cdn.alrigroup.com)
+    add_route("/*", "GET", "cdn.alrigroup.com", cdn_handler);
+
+    // CDN Admin API
+    add_route("/manager/api/cdn/files", "GET", main_domain, cdn_admin_list_handler);
+    add_route("/manager/api/cdn/upload", "POST", main_domain, cdn_admin_upload_handler);
+    add_route("/manager/api/cdn/link", "POST", main_domain, cdn_admin_link_handler);
+    add_route("/manager/api/cdn/delete", "POST", main_domain, cdn_admin_delete_handler);
+    add_route("/manager/api/cdn/mkdir", "POST", main_domain, cdn_admin_mkdir_handler);
+    add_route("/manager/api/cdn/stats", "GET", main_domain, cdn_admin_stats_handler);
+    add_route("/manager/api/cdn/rename", "POST", main_domain, cdn_admin_rename_handler);
+
     // Static Fallback (disponível em todos os domínios)
     add_route("/*", "GET", NULL, static_handler);
 }

@@ -5,10 +5,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ALRI CWB | Dashboard</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="icon" type="image/png" sizes="32x32" href="https://cdn.alrigroup.com/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="https://cdn.alrigroup.com/favicon-16x16.png">
+    <link rel="icon" type="image/svg+xml" href="https://cdn.alrigroup.com/favicon.svg">
+    <link rel="apple-touch-icon" sizes="180x180" href="https://cdn.alrigroup.com/apple-touch-icon.png">
+    <link rel="manifest" href="https://cdn.alrigroup.com/site.webmanifest">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"
+        integrity="sha384-e6nUZLBkQ86NJ6TVVKAeSaK8jWa3NhkYWZFomE39AvDbQWeie9PlQqM3pmYW5d1g"
+        crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+        integrity="sha384-DyZ88mC6Up2uqS4h/KRgHuoeGwBcD4Ng9iP4dIRy0EXTlnuz47vAwmeGwVChigm"
+        crossorigin="anonymous">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/manager/dashboard/style.css">
     <style>
@@ -285,20 +296,21 @@
         <!-- Sidebar de Navegação -->
         <nav class="sidebar">
             <div class="sidebar-header">
-                <img src="https://i.ibb.co/Fk4sSC7X/ALRI-SF-W.png" alt="ALRI Group" class="sidebar-logo">
+                <img src="https://cdn.alrigroup.com/ALRI-SF-W.png" alt="ALRI Group" class="sidebar-logo">
                 <div class="brand-subtext">ALRI CWB DASHBOARD</div>
             </div>
             <ul class="nav-links">
                 <li><button id="nav-analytics" class="tab-btn active" onclick="switchTab('tab-analytics', this)"
                         data-i18n="tab_analytics">Analytics &
                         Firewall</button></li>
+                <li><button id="nav-cdn" class="tab-btn" onclick="switchTab('tab-cdn', this)"><i class="fas fa-cloud"></i> CDN</button></li>
                 <li><button id="nav-logs" class="tab-btn" onclick="switchTab('tab-logs', this)"
                         data-i18n="tab_logs">System
                         Logs</button></li>
                 <li><button id="nav-users" class="tab-btn" onclick="switchTab('tab-users', this)"
                         data-i18n="tab_users">Management</button></li>
                 <li><button id="nav-settings" class="tab-btn" onclick="switchTab('tab-settings', this)"
-                        data-i18n="tab_settings">Settings</button></li>
+                        data-i18n="tab_settings"><i class="fas fa-cog"></i> Settings</button></li>
                 <li><button id="nav-update" class="tab-btn" onclick="switchTab('tab-update', this)"
                         data-i18n="tab_update">Updates</button></li>
                 <li><button id="nav-system" class="tab-btn" onclick="switchTab('tab-system', this)"
@@ -355,6 +367,8 @@
             <section id="tab-update" class="tab-content"></section>
             <!-- ABA 6: System Monitor -->
             <section id="tab-system" class="tab-content"></section>
+            <!-- ABA 7: CDN -->
+            <section id="tab-cdn" class="tab-content"></section>
         </main>
     </div>
 

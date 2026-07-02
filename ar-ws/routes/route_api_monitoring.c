@@ -12,34 +12,12 @@
 #include <errno.h>
 #include <pwd.h>
 
-static int is_admin(ClientConnection *conn, HttpRequest *req) {
-    int logged_in_role = 2;
-    const char *cookie_header = get_header(req, "Cookie");
-    char admin_token[65] = {0};
-    if (cookie_header) {
-        char *adm_ptr = strstr(cookie_header, "arc_admin_token=");
-        if (adm_ptr) {
-            strncpy(admin_token, adm_ptr + 16, 64);
-            char *semi = strchr(admin_token, ';');
-            if (semi) *semi = '\0';
-        }
-    }
-    
-    const char *auth_header = get_header(req, "Authorization");
-    char *final_token = NULL;
-    if (auth_header && strncmp(auth_header, "Bearer ", 7) == 0) final_token = (char*)auth_header + 7;
-    else if (admin_token[0] != '\0') final_token = admin_token;
 
-    if (is_valid_admin_session(final_token, server_get_client_ip(conn), &logged_in_role) == 1) {
-        return 1;
-    }
-    
-    server_send_response(conn, 401, "application/json", "{\"error\": \"Unauthorized\"}");
-    return 0;
-}
 
 void api_metrics_handler(ClientConnection *conn, HttpRequest *req) {
-    if (!is_admin(conn, req)) return;
+    AuthResult auth = authenticate_request(req, conn);
+    if (auth.valid != 1) { send_auth_error(conn, &auth); return; }
+    if (auth.role > 1) { server_send_response(conn, 403, "application/json", "{\"error\": \"Forbidden.\"}"); return; }
 
     cJSON *resp = cJSON_CreateObject();
     cJSON *arr = cJSON_AddArrayToObject(resp, "metrics");
@@ -57,7 +35,9 @@ void api_metrics_handler(ClientConnection *conn, HttpRequest *req) {
 }
 
 void api_ips_handler(ClientConnection *conn, HttpRequest *req) {
-    if (!is_admin(conn, req)) return;
+    AuthResult auth = authenticate_request(req, conn);
+    if (auth.valid != 1) { send_auth_error(conn, &auth); return; }
+    if (auth.role > 1) { server_send_response(conn, 403, "application/json", "{\"error\": \"Forbidden.\"}"); return; }
 
     cJSON *resp = cJSON_CreateObject();
     cJSON *arr = cJSON_AddArrayToObject(resp, "ips");
@@ -80,7 +60,9 @@ void api_ips_handler(ClientConnection *conn, HttpRequest *req) {
 }
 
 void api_logs_handler(ClientConnection *conn, HttpRequest *req) {
-    if (!is_admin(conn, req)) return;
+    AuthResult auth = authenticate_request(req, conn);
+    if (auth.valid != 1) { send_auth_error(conn, &auth); return; }
+    if (auth.role > 1) { server_send_response(conn, 403, "application/json", "{\"error\": \"Forbidden.\"}"); return; }
 
     cJSON *resp = cJSON_CreateObject();
     cJSON *arr = cJSON_AddArrayToObject(resp, "logs");
@@ -100,35 +82,7 @@ void api_logs_handler(ClientConnection *conn, HttpRequest *req) {
     server_send_json(conn, 200, resp);
 }
 
-static int check_root(ClientConnection *conn, HttpRequest *req) {
-    const char *cookie_header = get_header(req, "Cookie");
-    char admin_token[65] = {0};
-    if (cookie_header) {
-        char *adm_ptr = strstr(cookie_header, "arc_admin_token=");
-        if (adm_ptr) {
-            strncpy(admin_token, adm_ptr + 16, 64);
-            char *semi = strchr(admin_token, ';');
-            if (semi) *semi = '\0';
-        }
-    }
-    const char *auth_header = get_header(req, "Authorization");
-    char *final_token = NULL;
-    if (auth_header && strncmp(auth_header, "Bearer ", 7) == 0) final_token = (char*)auth_header + 7;
-    else if (admin_token[0] != '\0') final_token = admin_token;
-    int logged_in_role = 2;
-    int auth_status = is_valid_admin_session(final_token, server_get_client_ip(conn), &logged_in_role);
-    if (auth_status != 1) {
-        server_add_header(conn, "Set-Cookie: arc_admin_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT\r\n");
-        if (auth_status == -1) server_send_response(conn, 401, "application/json", "{\"error\":\"IP mismatch\"}");
-        else server_send_response(conn, 401, "application/json", "{\"error\":\"Unauthorized\"}");
-        return 0;
-    }
-    if (logged_in_role > 0) {
-        server_send_response(conn, 403, "application/json", "{\"error\":\"ROOT only\"}");
-        return 0;
-    }
-    return 1;
-}
+
 
 static unsigned long read_val(const char *buf, const char *key) {
     const char *p = strstr(buf, key);
@@ -139,7 +93,9 @@ static unsigned long read_val(const char *buf, const char *key) {
 }
 
 void api_system_info_handler(ClientConnection *conn, HttpRequest *req) {
-    if (!check_root(conn, req)) return;
+    AuthResult auth = authenticate_request(req, conn);
+    if (auth.valid != 1) { send_auth_error(conn, &auth); return; }
+    if (auth.role > 0) { server_send_response(conn, 403, "application/json", "{\"error\": \"ROOT only.\"}"); return; }
 
     cJSON *resp = cJSON_CreateObject();
     char errbuf[512] = {0};

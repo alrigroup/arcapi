@@ -687,6 +687,77 @@ tbody tr:hover {
     box-shadow: 0 0 5px var(--accent-glow);
 }
 
+/* CDN Upload Modal */
+.cdn-modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+}
+
+.cdn-modal-box {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    width: 500px;
+    max-width: 90vw;
+    overflow: hidden;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.4);
+}
+
+.cdn-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color);
+    font-weight: bold;
+    font-size: 0.95rem;
+}
+
+.cdn-modal-close {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+}
+
+.cdn-modal-close:hover {
+    color: var(--danger);
+}
+
+.cdn-modal-dropzone {
+    border: 2px dashed var(--border-color);
+    border-radius: 12px;
+    margin: 30px 20px;
+    padding: 40px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: rgba(255,255,255,0.02);
+}
+
+.cdn-modal-dropzone:hover,
+.cdn-modal-dropzone.dragover {
+    border-color: var(--accent);
+    background: var(--accent-glow);
+    transform: scale(1.01);
+}
+
+.cdn-modal-dropcontent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
 .btn-primary {
     background: var(--accent);
     color: #000;

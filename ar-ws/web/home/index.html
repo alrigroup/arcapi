@@ -4,16 +4,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ALRI Group | High-Performance Systems</title>
+    <title>ALRI Group | Holding Company — Technology & Lifestyle</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="https://cdn.alrigroup.com/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="https://cdn.alrigroup.com/favicon-16x16.png">
+    <link rel="icon" type="image/svg+xml" href="https://cdn.alrigroup.com/favicon.svg">
+    <link rel="apple-touch-icon" sizes="180x180" href="https://cdn.alrigroup.com/apple-touch-icon.png">
+    <link rel="manifest" href="https://cdn.alrigroup.com/site.webmanifest">
     <link rel="stylesheet" href="/home/style.css">
-    <!-- Font Awesome para ícones -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
 <body>
-    <!-- Navbar Simples -->
     <nav class="navbar">
         <div class="logo">ALRI<span>GROUP</span></div>
+        <div class="nav-links">
+            <a href="#about" data-i18n="nav_about">Holding</a>
+            <a href="#portfolio" data-i18n="nav_portfolio">Marcas</a>
+            <a href="#elite" data-i18n="nav_elite">Tecnologia</a>
+        </div>
         <div class="lang-switcher">
             <button onclick="toggleLanguage()" id="langBtn" class="mono">
                 <i class="fas fa-globe"></i> <span id="langText">PT-BR</span>
@@ -22,177 +30,188 @@
     </nav>
 
     <main>
-        <!-- Hero Section -->
+        <!-- HERO -->
         <section id="hero">
             <div class="bg-grid"></div>
             <div class="glow-orb"></div>
             <div class="hero-content fade-in">
-                <img src="https://i.ibb.co/Fk4sSC7X/ALRI-SF-W.png" width="250" alt="ALRI Group Logo"
+                <img src="https://cdn.alrigroup.com/ALRI-SF-W.png" width="220" alt="ALRI Group Logo"
                     style="margin-bottom: 2rem; filter: drop-shadow(0 0 10px rgba(255,255,255,0.1));">
-                <h1>ALRI <span class="text-gradient">GROUP</span></h1>
-                <p data-i18n="hero_p">"From a vision in 2020 to a multi-disciplinary tech reality."</p>
-                <a href="#structure" class="cta-button" data-i18n="hero_btn">Our Divisions</a>
+                <h1 data-i18n="hero_h1">O ecossistema que conecta<br><span class="text-gradient">tecnologia, inovação e novos mercados</span></h1>
+                <p data-i18n="hero_sub">Nosso DNA é tech. Nossos horizontes são ilimitados. <strong>ALRI Group</strong> — uma holding multidisciplinar que constrói o futuro em camadas.</p>
+                <div class="hero-ctas">
+                    <a href="#portfolio" class="cta-button" data-i18n="hero_cta1">Conheça Nossas Marcas</a>
+                    <a href="#about" class="cta-button cta-outline" data-i18n="hero_cta2">Explore o Ecossistema</a>
+                </div>
             </div>
         </section>
 
-        <!-- Our Story -->
-        <section id="story" class="fade-in">
-            <h2 data-i18n="story_h2">Our History</h2>
+        <!-- QUEM SOMOS -->
+        <section id="about" class="fade-in">
+            <h2 data-i18n="about_h2">Quem Somos</h2>
             <div class="showcase">
-                <div class="showcase-text">
-                    <p data-i18n="story_p1">The <strong>ALRI GROUP</strong> started as a dream in <strong>2020</strong>.
-                        What began as a conceptual idea from its founder has evolved over the years into a developing
-                        ecosystem of specialized technological subdivisions.</p>
-                    <p data-i18n="story_p2">Born from a passion for understanding how systems work and how to push their
-                        limits, the organization is now transitioning from a personal project to a professional
-                        organization.</p>
+                <div class="showcase-text about-text">
+                    <p data-i18n="about_p1">O <strong>ALRI Group</strong> nasceu em <strong>2020</strong> da mente de <strong>Alexsander</strong> — um engenheiro de sistemas com talento para enxergar além do código. O que começou como laboratório de pesquisa em modificações profundas de kernel e segurança ofensiva se transformou em algo maior. Muito maior.</p>
+                    <p data-i18n="about_p2">Hoje, o ALRI Group é uma <strong>Holding Company</strong> multidisciplinar. Mantemos nossa alma tecnológica viva através da <strong>ARD — ALRI Development</strong> (engenharia de sistemas, sistemas operacionais customizados como o <strong>AROS</strong> e scripts de alto desempenho como o <strong>ARFS</strong>), enquanto rompemos fronteiras com a <strong>PRSM CLOTHES</strong> — nossa marca global de vestuário premium. E isso é apenas o começo.</p>
+                    <p data-i18n="about_p3" class="about-highlight">De um sonho tech em 2020 a uma estrutura sólida de gestão de negócios. O grupo cresce, as marcas se multiplicam, o DNA permanece.</p>
                 </div>
             </div>
         </section>
 
-        <!-- Corporate Structure -->
-        <section id="structure" class="fade-in">
-            <h2 data-i18n="struct_h2">Corporate Structure</h2>
-            <p data-i18n="struct_p"
-                style="text-align: center; color: var(--text-muted); margin-bottom: 3rem; max-width: 800px; margin-left: auto; margin-right: auto;">
-                The ALRI GROUP acts as a <strong>Holding Company</strong>, serving as the parent organization for a set
-                of specialized technological subsidiaries.
-            </p>
+        <!-- NOSSO PORTFÓLIO -->
+        <section id="portfolio" class="fade-in">
+            <h2 data-i18n="portfolio_h2">Nosso Portfólio</h2>
+            <p data-i18n="portfolio_sub" class="section-sub">Cada marca do grupo representa um pilar estratégico. Juntas, formam um ecossistema completo.</p>
 
-            <div class="grid-cards">
-                <!-- ALRI DEVELOPMENT -->
-                <div class="card stagger-item">
-                    <h3 class="mono"><i class="fas fa-code"></i> ALRI DEVELOPMENT (ARD)</h3>
-                    <p data-i18n="ard_p">Systems engineering and deep kernel modifications.</p>
-                    <ul class="sub-list mono">
-                        <li><span>AROS:</span> Operating Systems (Windows, Android, Linux Mods)</li>
-                        <li><span>ARFS:</span> FiveM Scripts (Apex RP, ALRI Protect)</li>
-                    </ul>
+            <!-- Divisão Tech -->
+            <div class="portfolio-block">
+                <div class="block-header">
+                    <i class="fas fa-microchip block-icon"></i>
+                    <h3 data-i18n="portfolio_tech_title">Divisão Tech <span class="badge-pilar">O Pilar</span></h3>
                 </div>
-
-                <!-- ALRI GAMES -->
-                <div class="card stagger-item">
-                    <h3 class="mono"><i class="fas fa-gamepad"></i> ALRI GAMES (ARGA)</h3>
-                    <p data-i18n="arga_p">Interactive experience development and digital art.</p>
-                    <ul class="sub-list mono">
-                        <li><span>AR3D:</span> 3D Modeling and Assets</li>
-                        <li><span>ARGDEV:</span> Game Development Engine</li>
-                    </ul>
+                <div class="brand-grid">
+                    <div class="brand-card stagger-item">
+                        <div class="brand-card-header">
+                            <i class="fas fa-cubes"></i>
+                            <h4>ARD</h4>
+                        </div>
+                        <p class="brand-sub" data-i18n="portfolio_ard_sub">ALRI Development — Engenharia de Sistemas</p>
+                        <p data-i18n="portfolio_ard_p">Engenharia reversa, modificações profundas de kernel e infraestrutura de alto desempenho. A ARD é o motor que move o grupo.</p>
+                    </div>
+                    <div class="brand-card stagger-item">
+                        <div class="brand-card-header">
+                            <i class="fas fa-terminal"></i>
+                            <h4>AROS</h4>
+                        </div>
+                        <p class="brand-sub" data-i18n="portfolio_aros_sub">ALRI Operating System</p>
+                        <p data-i18n="portfolio_aros_p">Sistemas operacionais customizados — Windows, Android e Linux modificados para máxima performance, segurança e controle absoluto.</p>
+                    </div>
+                    <div class="brand-card stagger-item">
+                        <div class="brand-card-header">
+                            <i class="fas fa-code"></i>
+                            <h4>ARFS</h4>
+                        </div>
+                        <p class="brand-sub" data-i18n="portfolio_arfs_sub">FiveM Scripts & Protocolos</p>
+                        <p data-i18n="portfolio_arfs_p">Scripts de elite para FiveM — incluindo o ecossistema Apex RP e o sistema anticheat ALRI Protect. Performance, estabilidade e inovação.</p>
+                    </div>
                 </div>
+            </div>
 
-                <!-- ALRI CYBERSECURITY -->
-                <div class="card stagger-item">
-                    <h3 class="mono"><i class="fas fa-shield-halved"></i> ALRI CYBERSECURITY (ARCS)</h3>
-                    <p data-i18n="arcs_p">Government-level offensive and defensive security.</p>
-                    <ul class="sub-list mono">
-                        <li><span>Red Team:</span> Offensive Ops & Attack</li>
-                        <li><span>Blue Team:</span> Defense & Hardening</li>
-                        <li><span>Purple Team:</span> Hybrid Security Analysis</li>
-                    </ul>
+            <!-- Divisão Lifestyle -->
+            <div class="portfolio-block">
+                <div class="block-header">
+                    <i class="fas fa-vest block-icon"></i>
+                    <h3 data-i18n="portfolio_life_title">Divisão Lifestyle & Retail <span class="badge-expansao">A Expansão</span></h3>
+                </div>
+                <div class="brand-grid">
+                    <div class="brand-card stagger-item brand-card-wide">
+                        <div class="brand-card-header">
+                            <i class="fas fa-shirt"></i>
+                            <h4>PRSM CLOTHES</h4>
+                        </div>
+                        <p class="brand-sub" data-i18n="portfolio_prsm_sub">Moda Premium com Visão Global</p>
+                        <p data-i18n="portfolio_prsm_p">Design contemporâneo, qualidade premium e logística internacional. PRSM CLOTHES nasceu da mesma cultura de excelência que define o ALRI Group — agora traduzida para o mundo da moda.</p>
+                        <a href="https://prsm.alrigroup.com" target="_blank" class="brand-link">prsm.alrigroup.com <i class="fas fa-external-link-alt"></i></a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visão de Futuro -->
+            <div class="future-vision fade-in">
+                <div class="future-content">
+                    <i class="fas fa-rocket future-icon"></i>
+                    <h3 data-i18n="portfolio_future_title">Novos Horizontes</h3>
+                    <p data-i18n="portfolio_future_p">O ALRI Group está em constante incubação. Novas marcas, novos setores, novos mercados. O que começa como linha de código pode se tornar uma indústria inteira. <strong>Fique de olho.</strong></p>
                 </div>
             </div>
         </section>
 
-        <!-- Featured Projects -->
-        <section id="projects" class="fade-in">
-            <h2 data-i18n="proj_h2">Elite Projects</h2>
+        <!-- PROJETOS DE ELITE -->
+        <section id="elite" class="fade-in">
+            <h2 data-i18n="elite_h2">Projetos de Elite & Tecnologia</h2>
+            <p data-i18n="elite_sub" class="section-sub">A engenharia que sustenta cada marca do grupo. Certificações, licenças e produtos que definem nosso padrão.</p>
 
             <div class="project-showcase">
-                <!-- WMAROS -->
                 <div class="project-card">
                     <div class="project-header">
-                        <img src="https://i.ibb.co/wZFXRpv8/WMAROS.png" alt="WMAROS Logo">
+                        <div class="project-icon-wrapper">
+                            <i class="fas fa-bolt"></i>
+                        </div>
                         <div>
                             <h3 class="neon-text">WMAROS</h3>
                             <span class="badge">Engineered by AROS</span>
                         </div>
                     </div>
-                    <p data-i18n="wmaros_p">The <strong>Windows Mod ALRI Operating System</strong> is our performance
-                        flagship. A Windows Professional environment rebuilt and optimized to deliver maximum FPS and
-                        the lowest possible latency for power users.</p>
+                    <p data-i18n="wmaros_p">O <strong>Windows Mod ALRI Operating System</strong> é nossa flagship de performance. Um ambiente Windows Professional reconstruído e otimizado para entregar o máximo de FPS e a menor latência possível para power users e gamers de alto nível.</p>
                     <div class="project-footer">
                         <span class="status-tag"><i class="fas fa-bolt"></i> Ultra Performance</span>
                         <span class="license-tag">ARGLFU License</span>
                     </div>
                 </div>
 
-                <!-- AR-BEMF -->
                 <div class="project-card">
                     <div class="project-header">
-                        <i class="fas fa-microchip project-icon"></i>
+                        <div class="project-icon-wrapper">
+                            <i class="fas fa-microchip"></i>
+                        </div>
                         <div>
                             <h3 class="neon-text">AR-BEMF</h3>
                             <span class="badge">Engineered by ARD</span>
                         </div>
                     </div>
-                    <p data-i18n="ar_bemf_p">The backbone of our web operations. A native C micro-framework focused on
-                        E2EE (End-to-End Encryption) and granular hot-reloading for systems that cannot stop.</p>
+                    <p data-i18n="arbemf_p">A espinha dorsal de nossas operações web. Um micro-framework em C nativo, focado em E2EE (End-to-End Encryption) e hot-reloading granular para sistemas que não podem parar. Puro desempenho em nível de kernel.</p>
                     <div class="project-footer">
-                        <span class="status-tag"><i class="fas fa-lock"></i> High Security</span>
+                        <span class="status-tag"><i class="fas fa-lock"></i> Alta Segurança</span>
                         <span class="license-tag">ARGLR License</span>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Licensing System -->
+        <!-- ARGL LICENSING -->
         <section id="licensing" class="fade-in">
-            <h2 data-i18n="lic_h2">ARGL Licensing System</h2>
+            <h2 data-i18n="lic_h2">Sistema de Licenciamento ARGL</h2>
             <div class="showcase license-showcase">
-                <p data-i18n="lic_p">Our licenses (ALRI Group Licenses) ensure the balance between open innovation and
-                    institutional security.</p>
+                <p data-i18n="lic_p">Nossas licenças (ALRI Group Licenses) garantem o equilíbrio entre inovação aberta e segurança institucional. Cada produto do ecossistema opera sob uma destas licenças.</p>
                 <div class="license-grid">
                     <div class="license-item">
                         <span class="lic-tag permissive">ARGLP</span>
                         <h4>Permissive</h4>
-                        <p data-i18n="lic_arglp">Free usage and modification for non-commercial purposes (Open Source).
-                        </p>
+                        <p data-i18n="lic_arglp">Uso e modificação livres para fins não comerciais (Open Source).</p>
                     </div>
                     <div class="license-item">
                         <span class="lic-tag freeuse">ARGLFU</span>
                         <h4>Free Use</h4>
-                        <p data-i18n="lic_arglfu">Free to use and distribute, but prohibited from undergoing
-                            modifications.</p>
+                        <p data-i18n="lic_arglfu">Livre para uso e distribuição, mas proibido de sofrer modificações.</p>
                     </div>
                     <div class="license-item">
                         <span class="lic-tag reserved">ARGLR</span>
                         <h4>Reserved</h4>
-                        <p data-i18n="lic_arglr">Restricted use for partners and clients. Hardened code with warranty.
-                        </p>
+                        <p data-i18n="lic_arglr">Uso restrito a parceiros e clientes. Código blindado com garantia.</p>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Mission & Founder -->
-        <section id="mission" class="fade-in">
-            <h2 data-i18n="founder_h2">Mission & Founder</h2>
+        <!-- FUNDADOR -->
+        <section id="founder" class="fade-in">
+            <h2 data-i18n="founder_h2">Missão & Fundador</h2>
             <div class="showcase">
                 <div class="showcase-text">
-                    <p data-i18n="founder_p1">Our goal is to provide innovative solutions in the most demanding areas of
-                        technology. We solve complex problems through our specialized branches:</p>
+                    <p data-i18n="founder_p1">Nosso propósito é fornecer soluções inovadoras nas áreas mais exigentes — da engenharia de sistemas ao mercado de moda global. Resolvemos problemas complexos através de nossas unidades de negócio:</p>
                     <ul class="tech-list mono">
-                        <li>> 🛡️ Security Research: <span data-i18n="founder_li1">Identification and remediation of
-                                critical flaws.</span></li>
-                        <li>> 💻 Software Engineering: <span data-i18n="founder_li2">Custom solutions for digital
-                                challenges.</span></li>
-                        <li>> ⚙️ Custom Tech: <span data-i18n="founder_li3">Bespoke tools for specific hardware.</span>
-                        </li>
+                        <li>> <i class="fas fa-shield-halved"></i> <span data-i18n="founder_li1">Engenharia de sistemas e segurança — o alicerce.</span></li>
+                        <li>> <i class="fas fa-cube"></i> <span data-i18n="founder_li2">Desenvolvimento de software e infraestrutura — a execução.</span></li>
+                        <li>> <i class="fas fa-vest"></i> <span data-i18n="founder_li3">Inovação em lifestyle e retail — a expansão.</span></li>
                     </ul>
-                    <p data-i18n="founder_p2"
-                        style="margin-top: 2rem; border-top: 1px solid var(--border); padding-top: 2rem;">
-                        <strong>Founder:</strong> ALRI GROUP was founded and is led by <strong>Alexsander
-                            (@alexsanderalri)</strong>. The name "ALRI" is an acronym derived from his surnames,
-                        <strong>Al</strong>meida + <strong>Ri</strong>beiro. With a strong background in security
-                        research and deep system modifications, the founder's vision remains as the pillar of every
-                        project.
+                    <p data-i18n="founder_p2" style="margin-top: 2rem; border-top: 1px solid var(--border); padding-top: 2rem;">
+                        <strong>Fundador:</strong> O ALRI Group foi fundado e é liderado por <strong>Alexsander (@alexsanderalri)</strong>. O nome "ALRI" é um acrônimo de seus sobrenomes — <strong>Al</strong>meida + <strong>Ri</strong>beiro. Com uma carreira consolidada em segurança ofensiva, engenharia reversa e modificações profundas de sistema, sua visão segue como o pilar de cada projeto e de cada marca que o grupo abriga.
                     </p>
                 </div>
             </div>
         </section>
     </main>
 
-    <!-- Rodapé e Easter Egg -->
     <footer>
         <div class="footer-socials">
             <a href="https://www.instagram.com/alrigroup" target="_blank" title="Instagram">
@@ -205,9 +224,8 @@
                 <i class="fab fa-github"></i>
             </a>
         </div>
-        <p class="footer-quote">"Building the future, one line of code at a time."</p>
-        <p class="footer-copy">&copy; 2020-2026 ALRI GROUP. All rights reserved. <span id="easter-egg"
-                title="Restricted Area"><i class="fas fa-lock"></i></span></p>
+        <p class="footer-quote" data-i18n="footer_quote">"Construindo o futuro, uma camada de cada vez."</p>
+        <p class="footer-copy">&copy; 2020-2026 ALRI Group. All rights reserved. <span id="easter-egg" title="Restricted Area"><i class="fas fa-lock"></i></span></p>
     </footer>
 
     <script src="/home/script.js"></script>
