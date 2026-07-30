@@ -1,8 +1,17 @@
+# ⚠️ [DEPRECATED / UNSUPPORTED] AR-CWB — Arc WebServer Ecosystem
+
+> [!CAUTION]
+> # 🚨 NOTICE: SYSTEM DEPRECATED
+> ## THIS REPOSITORY AND SYSTEM ARE NO LONGER MAINTAINED OR SUPPORTED.
+> 
+> ### The monolithic `AR-CWB` system has been officially deprecated and **MIGRATED TO THE NEW [ALRIOS / ARCORE](https://github.com/alrigroup) MICROSERVICES PLATFORM**.
+
+---
 # AR-CWB — Arc WebServer Ecosystem
 
-Secure, zero-trust HTTPS server and control panel for the ALRI Group ecosystem.
+Secure, zero-trust HTTPS server and control panel for the ALRI Group ecosystem *(Legacy System)*.
 
-## Architecture
+## Architecture *(Legacy)*
 
 ```
 ar-core/       Orchestrator — compiles, manages, and monitors arc_server
